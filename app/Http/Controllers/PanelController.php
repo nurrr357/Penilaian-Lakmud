@@ -31,7 +31,11 @@ class PanelController extends Controller
         $number = min(max(1, $request->integer('page', 1)), max(1, (int) ceil($filtered->count() / $perPage)));
         $listing = new LengthAwarePaginator($filtered->forPage($number, $perPage)->values(), $filtered->count(), $perPage, $number, ['path' => $request->url(), 'query' => $request->query()]);
 
-        return view('panel', $data + compact('page', 'material', 'listing', 'q'));
+        return view('panel', $data + compact('page', 'material', 'listing', 'q') + [
+            // Dashboard saja yang perlu angka ini. Halaman lain tetap seperti semula, termasuk
+            // blok listing yang tetap dibangun karena dipakai halaman absensi sampai hasil.
+            'dashboard' => $page === 'dashboard' ? $this->dashboard($data) : [],
+        ]);
     }
 
     private function tableQuery(Request $request): array
@@ -159,5 +163,87 @@ class PanelController extends Controller
         }
 
         return redirect('/hasil?event_id='.$event)->with('success', 'Status hasil diperbarui.');
+    }
+
+    /**
+     * Angka dashboard: tiga kartu metrik, satu batang rata-rata normalisasi 6 aspek, satu donut
+     * lulus/tidak lulus. Semuanya dari data yang sudah dimuat PanelService::context() untuk
+     * kegiatan terpilih, tanpa query baru, dan sengaja memakai snapshot (normalized,
+     * certificate_status) supaya angkanya tidak mungkin menyimpang dari tabel Hasil Perangkingan.
+     */
+    private function dashboard(array $data): array
+    {
+        $aspek = ['Absensi', 'Pretest', 'Keaktifan', 'Etika', 'Pemahaman', 'Posttest'];
+        $hasil = $data['results'];
+        $jumlah = $hasil->count();
+
+        $total = array_fill(0, 6, 0.0);
+        foreach ($hasil as $baris) {
+            $normal = json_decode($baris->normalized, true) ?: [];
+            foreach (range(0, 5) as $j) {
+                $total[$j] += (float) ($normal[$j] ?? 0);
+            }
+        }
+
+        $nilai = array_map(fn (float $t) => $jumlah > 0 ? round($t / $jumlah, 4) : 0.0, $total);
+        $lulus = $hasil->where('certificate_status', 'LULUS')->count();
+        $gagal = $hasil->where('certificate_status', 'TIDAK LULUS')->count();
+
+        $barisAspek = [];
+        $ringkasAspek = [];
+        foreach ($aspek as $i => $nama) {
+            $teks = number_format($nilai[$i], 4, ',', '.');
+            $barisAspek[] = ['nama' => $nama, 'nilai' => $teks];
+            $ringkasAspek[] = $nama.' '.$teks;
+        }
+
+        $persen = fn (int $bagian) => $jumlah > 0 ? round($bagian / $jumlah * 100, 1) : 0.0;
+
+        return [
+            'participants' => $data['participants']->count(),
+            'materials' => $data['materials']->count(),
+            'materials_active' => $data['active']->count(),
+            'events' => $data['events']->count(),
+            'results' => $jumlah,
+            'status_class' => match ($data['run']?->status) {
+                'locked' => 'finalized',
+                'valid' => 'active',
+                default => 'draft',
+            },
+            'aspect' => [
+                'labels' => $aspek,
+                'values' => $nilai,
+                'rows' => $barisAspek,
+                'summary' => 'Rata-rata nilai normalisasi 6 aspek: '.implode('; ', $ringkasAspek)
+                    .'. Skala 0 sampai 1, semakin kecil semakin dekat ke nilai terbaik antar peserta.',
+                'chart' => [
+                    'type' => 'bar',
+                    'data' => [
+                        'labels' => $aspek,
+                        'datasets' => [['name' => 'Rata-rata N', 'values' => $nilai]],
+                    ],
+                    'colors' => ['--lakmud-primary'],
+                    'height' => 260,
+                ],
+            ],
+            'passed' => [
+                'rows' => [
+                    ['nama' => 'Lulus', 'jumlah' => $lulus, 'persen' => number_format($persen($lulus), 1, ',', '.'), 'swatch' => 'ok'],
+                    ['nama' => 'Tidak lulus', 'jumlah' => $gagal, 'persen' => number_format($persen($gagal), 1, ',', '.'), 'swatch' => 'no'],
+                ],
+                'summary' => 'Dari '.$jumlah.' peserta: '.$lulus.' lulus ('.$persen($lulus).' persen), '
+                    .$gagal.' tidak lulus ('.$persen($gagal).' persen). Predikat A, B, C lulus.',
+                'chart' => [
+                    'type' => 'donut',
+                    'data' => [
+                        'labels' => ['Lulus', 'Tidak lulus'],
+                        'datasets' => [['values' => [$lulus, $gagal]]],
+                    ],
+                    'colors' => ['--lakmud-success', '--lakmud-error'],
+                    'height' => 300,
+                    'strokeWidth' => 28,
+                ],
+            ],
+        ];
     }
 }

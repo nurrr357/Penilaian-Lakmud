@@ -20,7 +20,10 @@ class ManagementPagesTest extends TestCase
             $person = DB::table('participants')->insertGetId(['full_name' => sprintf('TEST row %02d', $i)]);
             DB::table('event_participants')->insert(['lakmud_event_id' => $event, 'participant_id' => $person, 'sequence_number' => $i]);
         }
-        foreach (['/', '/peserta', '/absensi', '/pretest', '/posttest', '/keaktifan', '/etika', '/pemahaman'] as $url) {
+        // Dashboard tidak lagi punya tabel berpaginasi maupun kolom Baris per halaman, jadi
+        // assertion per_page hanya berlaku untuk halaman input dan data peserta. Pemilih
+        // Kegiatan tetap ada di dashboard dan tidak berpengaruh ke assertion ini.
+        foreach (['/peserta', '/absensi', '/pretest', '/posttest', '/keaktifan', '/etika', '/pemahaman'] as $url) {
             $response = $this->actingAs($user)->get($url.'?event_id='.$event);
             $response->assertOk()->assertViewHas('listing', fn ($rows) => count($rows) === 10 && $rows->total() === 12)->assertSee('name="per_page"', false);
             $this->get($url.'?event_id='.$event.'&page=2')->assertViewHas('listing', fn ($rows) => count($rows) === 2 && $rows->firstItem() === 11);

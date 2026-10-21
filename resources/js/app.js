@@ -1,39 +1,32 @@
 import '@material/web/progress/circular-progress.js';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
+import { mountSidebar } from './ui/sidebar';
+import { mountButtonLoading } from './ui/button-loading';
+import { mountCharts } from './ui/charts';
 
-document.querySelectorAll('[data-katex]').forEach(element => {
-    const formula = element.dataset.katex;
-    if (!formula) return;
-    katex.render(formula, element, {
-        displayMode: element.dataset.katexDisplay === 'true',
-        throwOnError: false,
-        strict: 'error',
-        trust: false,
-        output: 'htmlAndMathml',
+/* Render rumus. Dipanggil (1) saat halaman dimuat untuk elemen statis seperti halaman
+   Perhitungan, dan (2) setelah isi <template> dipindah ke [data-modal-body], karena
+   kueri dokumen tidak menembus isi <template>. */
+function renderFormulas(root) {
+    root.querySelectorAll('[data-katex]').forEach(element => {
+        const formula = element.dataset.katex;
+        if (!formula) return;
+        katex.render(formula, element, {
+            displayMode: element.dataset.katexDisplay === 'true',
+            throwOnError: false,
+            strict: 'error',
+            trust: false,
+            output: 'htmlAndMathml',
+        });
     });
-});
-
-const menu = document.querySelector('#menu');
-const backdrop = document.querySelector('#backdrop');
-const sidebar = document.querySelector('#sidebar');
-function syncSidebar() {
-    const mobile = matchMedia('(max-width:840px)').matches;
-    const open = mobile ? document.body.classList.contains('menu-open') : !document.body.classList.contains('collapsed');
-    if (sidebar) sidebar.inert = !open;
-    menu?.setAttribute('aria-expanded', String(open));
 }
-function closeMenu() { document.body.classList.remove('menu-open'); if (backdrop) backdrop.hidden = true; syncSidebar(); }
-syncSidebar();
-window.addEventListener('resize', syncSidebar);
-menu?.addEventListener('click', () => {
-    if (matchMedia('(max-width:840px)').matches) {
-        const open = document.body.classList.toggle('menu-open'); backdrop.hidden = !open; menu.setAttribute('aria-expanded', String(open));
-    } else { const collapsed = document.body.classList.toggle('collapsed'); menu.setAttribute('aria-expanded', String(!collapsed)); }
-    syncSidebar();
-});
-backdrop?.addEventListener('click', closeMenu);
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && !document.querySelector('dialog[open]')) { closeMenu(); menu?.focus(); } });
+
+renderFormulas(document);
+
+mountSidebar();
+mountButtonLoading();
+mountCharts();
 
 let dirtyForm = null;
 document.querySelectorAll('[data-unsaved]').forEach(form => form.addEventListener('input', () => { dirtyForm = form; }));
@@ -44,11 +37,32 @@ document.addEventListener('click', e => {
         else dirtyForm = null;
     }
 });
-document.querySelectorAll('[data-modal-open]').forEach(button => button.addEventListener('click', () => {
-    const dialog = document.getElementById(button.dataset.modalOpen);
-    dialog._opener = button;
+
+/* Modal: satu jalur buka untuk dua bentuk sumber. [data-modal-open] menunjuk <dialog>
+   langsung (dialog form per baris) atau <template> (isi detail, diklon ke [data-modal-body]
+   milik satu dialog bersama bertanda data-modal). */
+document.addEventListener('click', event => {
+    const opener = event.target.closest('[data-modal-open]');
+    if (!opener) return;
+
+    const source = document.getElementById(opener.dataset.modalOpen);
+    if (!source) return;
+
+    const dialog = source instanceof HTMLDialogElement
+        ? source
+        : document.querySelector('dialog[data-modal]');
+    if (!dialog || dialog.open) return; // showModal() pada dialog yang sudah terbuka melempar InvalidStateError
+
+    if (source instanceof HTMLTemplateElement) {
+        const body = dialog.querySelector('[data-modal-body]');
+        if (!body) return;
+        body.replaceChildren(source.content.cloneNode(true));
+        renderFormulas(body); // isi <template> baru terlihat kueri dokumen setelah dipindah ke sini
+    }
+
+    dialog._opener = opener; // dialog bersama tidak punya [data-modal-open="<id dialog>"] untuk fallback fokus
     dialog.showModal();
-}));
+});
 document.querySelectorAll('dialog').forEach(dialog => {
     dialog.addEventListener('keydown', e => {
         if (e.key !== 'Tab') return;
@@ -65,6 +79,7 @@ document.querySelectorAll('dialog').forEach(dialog => {
     dialog.addEventListener('close', () => (dialog._opener ?? document.querySelector(`[data-modal-open="${dialog.id}"]`))?.focus());
     if (dialog.hasAttribute('data-reopen')) { dialog.showModal(); dialog.querySelector('[aria-invalid="true"]')?.focus(); }
 });
+
 document.addEventListener('submit', e => {
     const form = e.target;
     if (form.dataset.submitting) { e.preventDefault(); return; }
@@ -72,9 +87,5 @@ document.addEventListener('submit', e => {
     dirtyForm = null;
     if (form.dataset.confirm && !confirm(form.dataset.confirm)) { e.preventDefault(); return; }
     form.dataset.submitting = 'true';
-    const button = e.submitter;
-    if (button) { button.dataset.label = button.textContent; button.textContent = 'Memproses…'; button.setAttribute('aria-busy', 'true'); button.disabled = true; }
 });
 window.addEventListener('pageshow', () => document.querySelectorAll('form[data-submitting]').forEach(form => delete form.dataset.submitting));
-window.addEventListener('pageshow', () => document.querySelectorAll('[aria-busy=true]').forEach(button => { button.textContent = button.dataset.label; button.disabled = false; button.removeAttribute('aria-busy'); }));
-

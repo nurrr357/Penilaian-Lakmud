@@ -1,3 +1,518 @@
-.formula{max-width:100%;overflow-x:auto;padding:8px 0}.formula .katex-display{margin:.5rem 0}.formula-section{overflow:hidden}.nav-group{margin:16px 0}.nav-group h2{font-size:14px;color:var(--muted);margin:0 16px 6px}.nav-group .nav-link{margin-left:12px}.crud-modal{width:min(640px,calc(100% - 32px));max-height:calc(100dvh - 32px);overflow-y:auto;border:1px solid #7b8793;border-radius:12px;padding:24px;color:var(--ink);background:white}.crud-modal::backdrop{background:rgb(23 33 43 / 55%)}.pagination{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin:20px 0}.pagination .actions{align-items:center}.table-filter{flex-wrap:wrap}.table-filter label{min-width:160px}.field-error{color:#b3261e}.button.secondary{color:#0d6560;background:white;border-color:#0d6560}.table-wrap:focus-visible{outline:3px solid #0a59aa;outline-offset:3px}@media(max-width:840px){.crud-modal{padding:18px}.crud-modal input,.crud-modal select{font-size:16px}.pagination .actions{gap:12px}}
-:root{--md-sys-color-primary:#0d6560;--surface:#f6f8fa;--ink:#17212b;--muted:#4f5b68;--line:#c6ccd4;font-family:'Segoe UI',system-ui,sans-serif;color:var(--ink);background:var(--surface)}*{box-sizing:border-box}body{margin:0}a{color:#0d6560}button,.button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 18px;border:1px solid transparent;border-radius:8px;background:#0d6560;color:white;font:inherit;font-weight:600;cursor:pointer;text-decoration:none}button:disabled{background:#e4e9ef;color:#4f5b68;cursor:not-allowed}button.secondary{color:#0d6560;background:white;border-color:#0d6560}button.danger{background:#b3261e}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #0a59aa;outline-offset:3px}input,select{font:inherit;min-height:44px;width:100%;max-width:100%;border:1px solid #7b8793;border-radius:6px;background:white;color:var(--ink);padding:8px 10px}label{display:flex;flex-direction:column;gap:8px;font-weight:600;margin-bottom:16px}fieldset{border:0;padding:0;margin:0;min-width:0}h1{font-size:28px;margin:0 0 24px}h2{font-size:21px;margin-top:0}h3{font-size:17px}p,li{line-height:1.6}small{display:block;font-size:13px;color:var(--muted);font-weight:400}.shell{display:flex;min-height:100dvh}.sidebar{width:272px;flex:none;background:#eef1f5;border-right:1px solid var(--line);position:sticky;top:0;height:100dvh;padding:22px 16px;overflow:auto}.brand{font-size:22px;font-weight:700;color:#0d6560;margin-bottom:28px}.nav-link{display:flex;align-items:center;min-height:44px;padding:12px 16px;color:var(--muted);text-decoration:none;border-radius:24px;margin:4px 0}.nav-link.active{background:#0d6560;color:white;font-weight:600}.nav-link:hover:not(.active){background:#e4e9ef}.sidebar-note{margin:30px 16px;color:var(--muted);font-size:13px}.main{min-width:0;flex:1}.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:16px;padding:12px 24px;background:var(--surface);border-bottom:1px solid var(--line)}.topbar form{margin-left:auto}.topbar strong{font-size:16px}main{padding:28px;max-width:1600px;margin:auto}.card{background:white;border:1px solid #dde3ea;border-radius:16px;padding:24px;margin:24px 0}.filter,.actions{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:20px 0}.filter label{margin:0;min-width:200px;max-width:100%}.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:16px}.table-wrap{overflow:auto;max-height:65vh;border:1px solid var(--line);border-radius:8px;margin:20px 0;background:white}table{border-collapse:separate;border-spacing:0;width:100%;font-size:14px}th,td{padding:12px;text-align:left;border-bottom:1px solid #dde3ea;white-space:nowrap}thead th{position:sticky;top:0;background:#e4e9ef;z-index:3}tbody th{position:sticky;left:0;background:white;z-index:2;max-width:260px;white-space:normal;min-width:160px}td input{min-width:100px}td select{min-width:155px}td details{white-space:normal;min-width:240px}summary{cursor:pointer;min-height:44px;padding:12px 0;font-weight:600}details{border-bottom:1px solid #dde3ea;padding:8px 0}details form{margin:16px 0}.notice{background:#b1f1ea;color:#00201e;border-radius:8px;padding:16px}.error{background:#f9dedc;color:#8c1d18;padding:16px;border-radius:8px}.mapping{columns:2;font-size:14px}.login{max-width:480px;margin:6vh auto;padding:20px}.skip{position:fixed;top:-100px;z-index:100;background:white;padding:16px}.skip:focus{top:0}.collapsed .sidebar{display:none}.backdrop{display:none}button[aria-busy=true]{opacity:.8}@media(max-width:840px){main{padding:18px}.card{padding:18px}.sidebar{position:fixed;z-index:50;left:0;transform:translateX(-100%);width:min(272px,85vw)}.menu-open .sidebar{transform:none}.menu-open .backdrop{display:block;position:fixed;inset:0;background:#0008;border:0;border-radius:0;z-index:40}.topbar{padding:12px;gap:10px}.topbar strong{font-size:14px}.mapping{columns:1}td input,td select{font-size:16px}.collapsed .sidebar{display:block}.filter{align-items:stretch}.filter label{flex:1}h1{font-size:24px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+/* ==========================================================================
+   Panel Penilaian LAKMUD — berkas masuk CSS.
+   Struktur mengikuti proyek sumber D:/huda/project/laravel/lakmud:
+     tokens.css            → token (sumber kebenaran warna/ukuran)
+     components/icons.css  → md-icon, tombol ikon, varian .lak-btn
+     legacy/app-lama.css   → CSS panel ini sebelum reskin (selama transisi)
+   Dokumen acuan: docs/audit-style-lakmud-untuk-panel-penilaian.md
 
+   Catatan penerapan (dokumen §1.6, keputusan yang menyimpang dari dokumen):
+   1. legacy diimpor SEBELUM komponen LAKMUD supaya kelas baru menang pada
+      selector yang sama (.pagination, .table-wrap, .card/.lak-card).
+   2. Kelas lama yang dikunci test suite tetap hidup sebagai alias:
+      .crud-modal (dialog), .skip, .field-error, .notice, .error, .button.
+      tests/Feature/AspekMooraPagesTest.php mengunci literal
+      `class="crud-modal" aria-labelledby="..."  data-reopen`.
+   3. --lakmud-surface-bright didefinisikan di sini (dipakai icons.css,
+      tidak ada di tokens.css) — dokumen §15.4 butir 6.
+   ========================================================================== */
+@import './tokens.css';
+@import './legacy/app-lama.css';
+@import './components/icons.css';
+
+:root {
+  /* Dokumen §3 catatan: dipakai icons.css dengan fallback #fff. */
+  --lakmud-surface-bright: #ffffff;
+}
+
+/* ==========================================================================
+   Lapisan dasar (dokumen §6.2)
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: var(--lakmud-font);
+  background: var(--lakmud-surface);
+  color: var(--lakmud-on-surface);
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+
+html { scroll-padding-top: calc(var(--app-topbar-height) + 16px); scroll-behavior: smooth; }
+:focus-visible { outline: 2px solid var(--lakmud-info); outline-offset: 2px; }
+
+.skip-link {
+  position: fixed; top: 8px; left: 8px; z-index: 100;
+  transform: translateY(-150%);
+  background: var(--lakmud-card); color: var(--lakmud-on-surface);
+  padding: 10px 16px; border: 2px solid var(--lakmud-info);
+  border-radius: var(--app-button-radius);
+}
+.skip-link:focus { transform: none; }
+a { color: var(--lakmud-primary); }
+
+/* ==========================================================================
+   Shell aplikasi (dokumen §6.2, §6.5)
+   ========================================================================== */
+.app-shell { display: flex; min-height: 100dvh; }
+
+.app-sidebar {
+  position: fixed; inset: 0 auto 0 0; z-index: 60;
+  width: var(--app-sidebar-width); max-width: 85vw;
+  background: var(--lakmud-surface-container);
+  border-inline-end: 1px solid var(--lakmud-outline-variant);
+  display: flex; flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform .25s ease;
+  overflow: hidden;
+}
+.app-sidebar.is-open { transform: translateX(0); }
+
+.app-sidebar__brand {
+  display: flex; align-items: center; gap: 12px; flex: none;
+  height: var(--app-topbar-height); padding: 0 20px;
+  font-weight: 700; font-size: 18px; letter-spacing: .02em;
+  color: var(--lakmud-primary);
+  white-space: nowrap; overflow: hidden;
+}
+.brand-initial { display: none; }
+
+.app-sidebar__nav {
+  flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: 8px 12px 16px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--lakmud-outline-variant) transparent;
+}
+.app-sidebar__nav::-webkit-scrollbar { width: 6px; }
+.app-sidebar__nav::-webkit-scrollbar-track { background: transparent; }
+.app-sidebar__nav::-webkit-scrollbar-thumb { background: var(--lakmud-outline-variant); border-radius: 999px; }
+.app-sidebar__nav::-webkit-scrollbar-thumb:hover { background: var(--lakmud-outline); }
+
+.app-sidebar__footer {
+  flex: none; padding: 14px 24px;
+  border-top: 1px solid var(--lakmud-outline-variant);
+  font-size: 12px; color: var(--lakmud-on-surface-variant);
+}
+
+.app-backdrop {
+  position: fixed; inset: 0; z-index: 50;
+  background: rgba(0, 0, 0, .45);
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s ease;
+}
+.app-backdrop.is-visible { opacity: 1; pointer-events: auto; }
+
+.app-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+.app-topbar {
+  position: sticky; top: 0; z-index: 40;
+  display: flex; align-items: center; gap: 12px;
+  height: var(--app-topbar-height);
+  padding: 0 clamp(12px, 2vw, var(--app-page-gutter));
+  background: var(--lakmud-card);
+  border-bottom: 1px solid var(--lakmud-outline-variant);
+}
+.app-topbar__title { font-size: 15px; font-weight: 600; margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app-topbar__spacer { flex: 1; }
+
+.app-content {
+  flex: 1; width: 100%;
+  max-width: var(--app-content-max-width);
+  margin-inline: auto;
+  padding: clamp(12px, 2vw, var(--app-page-gutter));
+}
+.app-content > .lak-card + .lak-card { margin-top: var(--app-section-gap); }
+
+@media print {
+  .app-sidebar, .app-topbar, .app-backdrop, .page-header__actions { display: none !important; }
+  .app-content { padding: 0; max-width: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-sidebar, .app-backdrop { transition: none; }
+  html { scroll-behavior: auto; }
+}
+
+/* Rail desktop (dokumen §6.5) */
+@media (min-width: 840px) {
+  .app-sidebar {
+    transform: none; position: sticky; bottom: auto; top: 0;
+    width: var(--app-sidebar-collapsed-width);
+    height: 100dvh; transition: width .2s ease;
+  }
+  .app-sidebar .label,
+  .app-sidebar .app-nav-group__title,
+  .app-sidebar .app-sidebar__brand .brand-label { display: none; }
+  .app-sidebar .brand-initial { display: block; margin-inline: auto; }
+  .app-sidebar .app-nav-link {
+    justify-content: center; width: 44px; height: 44px;
+    padding: 0; margin-inline: auto; border-radius: 50%;
+  }
+  .app-sidebar.is-expanded { width: var(--app-sidebar-width); }
+  .app-sidebar.is-expanded .label,
+  .app-sidebar.is-expanded .app-nav-group__title { display: block; }
+  .app-sidebar.is-expanded .brand-initial { display: none; }
+  .app-sidebar.is-expanded .app-sidebar__brand .brand-label { display: block; }
+  .app-sidebar.is-expanded .app-nav-link {
+    justify-content: flex-start; width: auto; height: auto;
+    margin-inline: 0; padding: 10px 12px; border-radius: 12px;
+  }
+  .app-breadcrumb { display: block; }
+}
+
+@media (min-width: 1200px) {
+  .app-sidebar:not(.is-collapsed) { width: var(--app-sidebar-width); }
+  .app-sidebar:not(.is-collapsed) .label,
+  .app-sidebar:not(.is-collapsed) .app-nav-group__title { display: block; }
+  .app-sidebar:not(.is-collapsed) .brand-initial { display: none; }
+  .app-sidebar:not(.is-collapsed) .app-sidebar__brand .brand-label { display: block; }
+  .app-sidebar:not(.is-collapsed) .app-nav-link {
+    justify-content: flex-start; width: auto; height: auto;
+    margin-inline: 0; padding: 10px 12px; border-radius: 12px;
+  }
+}
+
+@media (min-width: 600px) { .app-content { padding: var(--app-page-gutter); } }
+
+/* Breakpoint compact (dokumen §7) */
+@media (max-width: 599px) {
+  .app-content { padding: 18px; }
+  .lak-card { padding: 18px; }
+  .lak-card--flush { padding: 0; }
+  .page-header h1 { font-size: 24px; }
+  .lak-form__grid { grid-template-columns: minmax(0, 1fr); }
+  .page-header__actions, .lak-form__actions { width: 100%; }
+}
+
+/* ==========================================================================
+   Transisi: netralkan aturan legacy yang bocor ke markup baru.
+   Hanya berlaku selama legacy/app-lama.css masih diimpor.
+   - .lak-field > label: legacy `label{display:flex;flex-direction:column;margin-bottom:16px}`.
+   - .app-backdrop[hidden]: legacy `button{display:inline-flex}` mengalahkan
+     aturan UA `[hidden]{display:none}`, sehingga backdrop tetap dapat difokus Tab.
+   ========================================================================== */
+.lak-field > label { display: block; margin-bottom: 0; }
+.app-backdrop[hidden] { display: none; }
+.skip { /* alias lama .skip → .skip-link */ position: fixed; top: 8px; left: 8px; z-index: 100; transform: translateY(-150%); background: var(--lakmud-card); color: var(--lakmud-on-surface); padding: 10px 16px; border: 2px solid var(--lakmud-info); border-radius: var(--app-button-radius); }
+.skip:focus { transform: none; }
+
+/* ==========================================================================
+   Komponen (dokumen §8)
+   ========================================================================== */
+
+/* --- Tombol: varian yang belum ada di components/icons.css (§8.1) ---
+   icons.css hanya memuat filled/outlined/text/sm; danger & tonal ditambahkan di sini
+   supaya tidak mewarisi `button{background:#0d6560;color:white}` dari CSS legacy. */
+.lak-btn--danger { background: transparent; color: var(--lakmud-error); }
+.lak-btn--danger:hover { background: var(--lakmud-error-container); }
+.lak-btn--tonal { background: var(--lakmud-primary-container); color: var(--lakmud-on-primary-container); }
+.lak-btn--tonal:hover { filter: brightness(1.04); }
+
+/* --- Kartu (§8.2) --- */
+.lak-card {
+  background: var(--lakmud-card);
+  border: 1px solid var(--lakmud-outline-variant);
+  border-radius: var(--app-card-radius);
+  padding: 24px;
+  min-width: 0;
+}
+.lak-card__title { font-size: 16px; font-weight: 700; margin: 0 0 12px; }
+.lak-card__title + .subtitle { margin-top: 0; }
+.lak-card__head {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 8px 16px; margin-bottom: 12px;
+}
+.lak-card__head .lak-card__title { margin: 0; }
+.lak-card__head .subtitle { margin: 2px 0 0; font-size: 13px; color: var(--lakmud-on-surface-variant); }
+.lak-card--flush { padding: 0; }
+.lak-card--flush > .table-wrap,
+.lak-card--flush > .table-scroll { border: 0; border-radius: 0 0 var(--app-table-radius) var(--app-table-radius); }
+
+/* --- Page header & breadcrumb (§8.3) --- */
+.page-header {
+  display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between;
+  gap: 12px; margin-bottom: var(--app-section-gap);
+}
+.page-header h1 { font-size: var(--app-type-page); margin: 0 0 4px; }
+.page-header .subtitle { margin: 0; color: var(--lakmud-on-surface-variant); font-size: 13px; }
+.page-header__actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.app-breadcrumb { font-size: 12px; color: var(--lakmud-on-surface-variant); display: none; }
+.app-breadcrumb ol { display: flex; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.app-breadcrumb li + li::before { content: '/'; margin-right: 6px; }
+.app-breadcrumb a { color: inherit; text-decoration: none; }
+
+/* --- Tabel (§8.5) --- */
+.table-wrap,
+.table-scroll {
+  overflow-x: auto; max-width: 100%;
+  border: 1px solid var(--lakmud-outline-variant);
+  border-radius: var(--app-table-radius);
+  background: var(--lakmud-card);
+  -webkit-overflow-scrolling: touch;
+}
+.table-wrap:focus-visible, .table-scroll:focus-visible { outline: 2px solid var(--lakmud-info); outline-offset: 2px; }
+
+.lak-table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.lak-table th, .lak-table td { padding: 12px; text-align: left; white-space: nowrap; }
+
+/* Header lengket harus SELALU di atas kolom lengket (z-index 3 > 1). Bila keduanya
+   bernilai sama, sel data yang datang belakangan di DOM menutupi header kolom 2 saat
+   halaman digulir. Nilai 3/1 mengikuti komponen grid di §8.5 dokumen style. */
+.lak-table thead th {
+  position: sticky; top: 0; z-index: 3;
+  background: var(--lakmud-surface-container);
+  font-size: 12px; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--lakmud-on-surface-variant);
+  /* border-collapse: collapse tidak menggambar border pada sel lengket yang terlepas,
+     jadi garis bawah header dijaga lewat box-shadow. */
+  box-shadow: inset 0 -1px 0 var(--lakmud-outline-variant);
+}
+/* Kolom identitas baris (kolom 2) tetap menempel di kiri, tapi berada di bawah header
+   dan di atas isi yang bergulir. Aturan lama `tbody th` (z-index 2) dinetralkan di sini. */
+.lak-table tbody th {
+  position: sticky; left: 0; z-index: 1;
+  background: var(--lakmud-card);
+  min-width: 160px; max-width: 260px; white-space: normal;
+  box-shadow: 1px 0 0 var(--lakmud-outline-variant), inset 0 -1px 0 var(--lakmud-outline-variant);
+}
+/* Header kolom kunci ikut menempel di kiri supaya sejajar dengan isinya saat tabel
+   bergulir mendatar (pola yang sama dengan kolom kunci di §8.5). z-index 4 menaruhnya
+   di atas header lain yang lewat di belakangnya. */
+.lak-table thead th:nth-child(2) {
+  left: 0; z-index: 4;
+  box-shadow: 1px 0 0 var(--lakmud-outline-variant), inset 0 -1px 0 var(--lakmud-outline-variant);
+}
+.lak-table tbody tr + tr td { border-top: 1px solid var(--lakmud-outline-variant); }
+.lak-table td .wrap,
+.lak-table th .wrap { white-space: normal; overflow-wrap: anywhere; }
+
+/* --- Pagination (§8.5) --- */
+.pagination { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: var(--app-section-gap); font-size: 14px; padding: 0; }
+.pagination__label { margin: 0 auto 0 0; color: var(--lakmud-on-surface-variant); }
+.pagination__item {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 44px; min-height: 44px; padding: 0 12px;
+  border: 1px solid var(--lakmud-outline);
+  border-radius: var(--app-button-radius);
+  background: var(--lakmud-card); color: var(--lakmud-on-surface);
+  text-decoration: none; font-variant-numeric: tabular-nums;
+}
+a.pagination__item:hover { background: var(--lakmud-surface-container-high); }
+.pagination__item.is-current { background: var(--lakmud-primary); border-color: var(--lakmud-primary); color: var(--lakmud-on-primary); font-weight: 600; }
+.pagination__item.is-disabled { color: var(--lakmud-on-surface-variant); opacity: .55; }
+
+/* --- Formulir (§8.6) --- */
+.lak-form { display: grid; gap: 16px; }
+.lak-form--sections { gap: var(--app-section-gap); }
+.lak-form__grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); }
+.lak-form__row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.lak-form__actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
+
+.lak-form > *,
+.lak-form__grid > *,
+.lak-field { min-width: 0; }
+
+.lak-field { display: grid; gap: 6px; }
+.lak-field > label { font-size: 13px; font-weight: 600; color: var(--lakmud-on-surface-variant); }
+.lak-field .hint { font-size: 12px; color: var(--lakmud-on-surface-variant); }
+
+.lak-input {
+  width: 100%; padding: 10px 12px;
+  border: 1px solid var(--lakmud-outline);
+  border-radius: var(--app-input-radius);
+  background: var(--lakmud-card); color: var(--lakmud-on-surface);
+  font: inherit; font-size: 16px; min-height: 44px;
+}
+.lak-input:focus-visible { outline: 2px solid var(--lakmud-primary); outline-offset: 1px; }
+.lak-input[aria-invalid="true"] { border-color: var(--lakmud-error); }
+
+.lak-field__error, .field-error { font-size: 12px; color: var(--lakmud-error); }
+.lak-check { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }
+.lak-fieldset { border: 1px solid var(--lakmud-outline-variant); border-radius: 12px; padding: 16px; }
+.lak-fieldset legend, .lak-fieldset__legend { font-size: 13px; font-weight: 600; padding: 0 8px; color: var(--lakmud-on-surface-variant); }
+
+/* --- Alert & badge (§8.7) --- */
+.alert, .notice { padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-size: 14px; }
+.alert--success, .notice { background: var(--lakmud-success-container); color: var(--lakmud-success); }
+.alert--error { background: var(--lakmud-error-container); color: var(--lakmud-error); }
+
+.lak-alert { padding: 12px 16px; border-radius: 12px; font-size: 14px; margin-bottom: 16px; }
+.lak-alert ul { margin: 6px 0 0 18px; }
+.lak-alert--error, .error { background: var(--lakmud-error-container); color: var(--lakmud-error); }
+.lak-alert--info { background: var(--lakmud-info-container); color: var(--lakmud-info); }
+.lak-alert--success { background: var(--lakmud-success-container); color: var(--lakmud-success); }
+.lak-alert--warning { background: var(--lakmud-warning-container); color: var(--lakmud-warning); }
+.lak-alert:focus-visible { outline: 2px solid var(--lakmud-error); outline-offset: 2px; }
+.lak-alert__head { font-weight: 600; margin-bottom: 4px; }
+.lak-alert li + li { margin-top: 2px; }
+
+.lak-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 2px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 600; white-space: nowrap;
+}
+.lak-badge--draft { background: var(--lakmud-surface-container-high); color: var(--lakmud-on-surface-variant); }
+.lak-badge--active { background: var(--lakmud-success-container); color: var(--lakmud-success); }
+.lak-badge--finalized { background: var(--lakmud-info-container); color: var(--lakmud-info); }
+.lak-badge--archived { background: var(--lakmud-warning-container); color: var(--lakmud-warning); }
+.lak-badge--predicate-a { background: var(--lakmud-success-container); color: var(--lakmud-success); }
+.lak-badge--predicate-b { background: var(--lakmud-primary-container); color: var(--lakmud-on-primary-container); }
+.lak-badge--predicate-c { background: var(--lakmud-info-container); color: var(--lakmud-info); }
+.lak-badge--predicate-d { background: var(--lakmud-warning-container); color: var(--lakmud-warning); }
+.lak-badge--predicate-e { background: var(--lakmud-error-container); color: var(--lakmud-error); }
+.lak-status-text { font-weight: 600; }
+
+/* --- Blok pendukung & utility (§8.8) --- */
+.lak-filter-bar { display: flex; align-items: end; gap: 12px; flex-wrap: wrap; margin-bottom: var(--app-section-gap); }
+.lak-filter-bar > * { min-width: 0; }
+/* Kartu angka dashboard. Chromenya memakai .lak-card yang sudah ada supaya border,
+   radius, dan latar tidak punya definisi kedua; yang ditambah hanya isi kartunya. */
+.lak-metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 16px; }
+.lak-metric__label { margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--lakmud-on-surface-variant); }
+.lak-metric__value { margin: 4px 0 0; font-size: 32px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.lak-metric__note { margin: 2px 0 0; font-size: 13px; color: var(--lakmud-on-surface-variant); }
+/* Wadah grafik Frappe. Angka tengah donut ditumpuk di atas SVG, jadi wadahnya relatif; overlaynya
+   sengaja diletakkan di luar .lak-chart supaya penggambaran ulang (yang mengosongkan .lak-chart)
+   tidak ikut menghapusnya. */
+.lak-chart-wrap { position: relative; }
+.lak-chart { min-height: 260px; }
+.lak-chart--donut { min-height: 300px; }
+.lak-chart .chart-container { font-family: var(--lakmud-font); }
+.lak-chart .chart-container .axis,
+.lak-chart .chart-label { fill: var(--lakmud-on-surface-variant); }
+.lak-chart .chart-container .axis line { stroke: var(--lakmud-outline-variant); }
+/* Angka tengah donut Frappe. Nilai inset diukur, bukan dugaan: pusat cincin donut 1.6.2 duduk
+   10 px di kanan dan 3 px di bawah pusat wadahnya (tinggi 300, karena Frappe menyisakan ruang
+   label di dalam SVG), dan simpangannya sama pada 320, 768, dan 1440 px. left 20 px dan top 6 px
+   menggeser pusat kotak tepat ke pusat cincin. */
+.lak-chart__center { position: absolute; top: 6px; right: 0; bottom: 60px; left: 20px; margin: 0; display: grid; place-content: center; text-align: center; font-size: 30px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; pointer-events: none; }
+.lak-chart__center-note { display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--lakmud-on-surface-variant); }
+.lak-chart__legend { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 12px 0 0; padding: 0; list-style: none; font-size: 14px; }
+.lak-chart__swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 8px; }
+.lak-chart__swatch--ok { background: var(--lakmud-success); }
+.lak-chart__swatch--no { background: var(--lakmud-error); }
+.lak-dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 12px 24px; margin: 0; }
+.lak-dl dt { font-size: 12px; font-weight: 600; color: var(--lakmud-on-surface-variant); margin-bottom: 2px; }
+.lak-dl dd { margin: 0; font-size: 14px; overflow-wrap: anywhere; }
+.empty-state { text-align: center; padding: 48px 24px; color: var(--lakmud-on-surface-variant); }
+.history-row { margin-bottom: 8px; }
+.t-center { text-align: center; }
+.t-right { text-align: right; }
+.muted, .lak-muted { color: var(--lakmud-on-surface-variant); }
+.inline { display: inline; }
+.visually-hidden {
+  position: absolute !important; width: 1px; height: 1px;
+  clip-path: inset(50%); overflow: hidden; white-space: nowrap;
+}
+@media print { .no-print { display: none !important; } }
+
+/* Rumus KaTeX, dipindah dari legacy/app-lama.css (audit KaTeX §5.1) */
+.formula { max-width: 100%; overflow-x: auto; padding: 8px 0; }
+.formula .katex-display { margin: .5rem 0; }
+
+/* --- Dialog (§8.9). .crud-modal = alias lama yang dikunci test suite. --- */
+.lak-modal, .crud-modal {
+  width: min(680px, calc(100vw - 32px));
+  max-height: min(84vh, 760px);
+  padding: 0;
+  border: 1px solid var(--lakmud-outline-variant);
+  border-radius: var(--app-card-radius);
+  background: var(--lakmud-card);
+  color: var(--lakmud-on-surface);
+  box-shadow: 0 24px 64px rgb(0 0 0 / 24%);
+}
+.lak-modal[open], .crud-modal[open] { display: flex; flex-direction: column; animation: modal-in .18s ease; }
+.lak-modal::backdrop, .crud-modal::backdrop { background: rgb(15 23 20 / 48%); }
+@keyframes modal-in { from { opacity: 0; transform: translateY(8px); } }
+
+.lak-modal__head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 12px 12px 20px;
+  border-bottom: 1px solid var(--lakmud-outline-variant);
+}
+.lak-modal__title, .crud-modal > h2 { margin: 0; font-size: 15px; font-weight: 700; }
+.lak-modal__body { flex: 1; min-height: 0; overflow: auto; padding: 16px 20px 20px; }
+.lak-modal__meta { margin: 0 0 12px; font-size: 12.5px; color: var(--lakmud-on-surface-variant); }
+/* Sub-judul dan rumus di dalam modal (audit KaTeX §5.2) */
+.lak-modal__body .formula { padding: 0 0 8px; }
+.lak-modal__body .formula .katex-display { margin: 0; }
+.lak-modal__subtitle { margin: 20px 0 8px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--lakmud-on-surface-variant); }
+.lak-modal__subtitle:first-child { margin-top: 0; }
+/* Tabel di dalam modal: kolom pertama tidak dilekatkan dan tidak dipaksa selebar 160px
+   seperti kolom pertama tabel halaman. Tanpa ini sel kolom 1 yang sticky menutupi kolom 2
+   dan seterusnya setiap kali tabel digulir mendatar, dan label sesingkat "C1" menahan 160px
+   ruang yang membuat tabel substitusi (756px) tidak muat di area modal (636px). */
+.lak-modal__body .lak-table tbody th { position: static; min-width: 0; max-width: none; box-shadow: none; }
+/* Tabel 7 kolom angka tidak muat di area modal (676px) dengan padding 12px milik tabel
+   halaman; 10px/8px membuat semua kolom terlihat tanpa gulir mendatar di desktop, dan di
+   layar kecil tabel tetap tergulir di dalam .table-wrap (md 238px/676px -> 238px/620px). */
+.lak-modal__body .lak-table th,
+.lak-modal__body .lak-table td { padding: 10px 8px; }
+.lak-modal__footer {
+  display: flex; justify-content: flex-end; gap: 12px;
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--lakmud-outline-variant);
+}
+@media (prefers-reduced-motion: reduce) { .lak-modal[open], .crud-modal[open] { animation: none; } }
+
+/* Isi dialog lama dipindahkan ke bentuk LAKMUD lewat pembungkus ini */
+.crud-modal > form { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.crud-modal__head { padding: 12px 12px 12px 20px; border-bottom: 1px solid var(--lakmud-outline-variant); }
+.crud-modal__head h2 { margin: 0; font-size: 15px; font-weight: 700; }
+.crud-modal__body { flex: 1; min-height: 0; overflow: auto; padding: 16px 20px 20px; }
+.crud-modal__foot { padding: 12px 20px 16px; border-top: 1px solid var(--lakmud-outline-variant); }
+.crud-modal__foot .lak-form__actions { margin-top: 0; justify-content: flex-end; }
+
+/* --- Navigasi sidebar (§8.12) --- */
+.app-nav-group { margin: 12px 0 4px; padding: 0 12px; }
+.app-nav-group:first-child { margin-top: 4px; }
+.app-nav-group__title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--lakmud-on-surface-variant); }
+
+.app-nav-link {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; min-height: 44px;
+  border-radius: 12px;
+  color: var(--lakmud-on-surface-variant);
+  text-decoration: none; font-size: 14px;
+  white-space: nowrap; overflow: hidden;
+}
+.app-nav-link:hover { background: var(--lakmud-surface-container-high); }
+.app-nav-link.is-active { background: var(--lakmud-primary); color: var(--lakmud-on-primary); font-weight: 600; }
+.app-nav-link span.label { text-overflow: ellipsis; overflow: hidden; }
+.app-nav-link:focus-visible { outline: 2px solid var(--lakmud-primary); outline-offset: -2px; }
+
+/* --- Halaman login (§8.14) --- */
+.auth-wrap { min-height: 100dvh; display: grid; place-items: center; padding: 24px; background: var(--lakmud-surface); }
+.auth-split { display: grid; grid-template-columns: 1fr; min-height: 100dvh; }
+.auth-identity { display: none; }
+
+@media (min-width: 1024px) {
+  .auth-split { grid-template-columns: 1.1fr 1fr; min-height: 100dvh; }
+  .auth-wrap { min-height: 100%; background: var(--lakmud-surface); }
+  .auth-identity {
+    display: flex; flex-direction: column; justify-content: space-between;
+    padding: 48px;
+    color: var(--lakmud-on-primary);
+    background: var(--lakmud-primary);
+  }
+  .auth-identity__inner h2 { font-size: 28px; margin: 14px 0 6px; letter-spacing: .5px; }
+  .auth-identity__tag { margin: 0 0 28px; font-size: 14px; color: var(--lakmud-on-primary); }
+  .auth-identity ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .auth-identity li {
+    display: flex; align-items: center; gap: 10px; font-size: 14px;
+    border: 1px solid var(--lakmud-primary-container);
+    padding: 12px 14px; border-radius: 12px;
+  }
+  .auth-identity li md-icon { color: var(--lakmud-on-primary); }
+  .auth-identity__foot { font-size: 12px; color: var(--lakmud-on-primary); padding-top: 24px; }
+}
+
+.auth-card { width: min(480px, 100%); }
+.auth-card__title { font-size: 22px; margin: 0 0 12px; }
+.auth-card .subtitle { margin: 0 0 24px; color: var(--lakmud-on-surface-variant); font-size: 13px; }
+.auth-brand { display: inline-flex; align-items: center; gap: 8px; color: var(--lakmud-primary); font-size: 17px; font-weight: 700; margin-bottom: 16px; }
+.auth-form { display: grid; gap: 16px; }
+.auth-form .lak-field { gap: 6px; }
+.auth-remember { display: flex; align-items: center; gap: 12px; }

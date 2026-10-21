@@ -1,0 +1,57 @@
+/* LAKMUD design tokens — docs/09-ui-ux-design-system.md §12 */
+:root {
+  /* Layout */
+  --app-sidebar-width: 272px;
+  --app-sidebar-collapsed-width: 88px;
+  --app-topbar-height: 72px;
+  --app-content-max-width: 1600px;
+  --app-page-gutter: 24px;
+  --app-section-gap: 24px;
+  --app-card-radius: 16px;
+  --app-button-radius: 8px;
+  --app-input-radius: 6px;
+  --app-table-radius: 8px;
+  --app-type-page: 28px;
+  --app-type-section: 21px;
+
+  /* Surfaces (slate-tinted neutrals — docs/20 §2.2, tegas utk app pemerintahan) */
+  --lakmud-surface: #f6f8fa;
+  --lakmud-surface-container: #eef1f5;
+  --lakmud-surface-container-high: #e4e9ef;
+  --lakmud-card: #ffffff;
+  --lakmud-outline: #c6ccd4;
+  --lakmud-outline-variant: #dde3ea;
+
+  /* Text (kontras >= 4.5:1 di atas surface) */
+  --lakmud-on-surface: #17212b;
+  --lakmud-on-surface-variant: #4f5b68;
+
+  /* Primary (deep teal — professional admin) */
+  --md-sys-color-primary: #0d6560;
+  --lakmud-primary: var(--md-sys-color-primary, #0d6560);
+  --lakmud-primary-container: #b1f1ea;
+  --lakmud-on-primary-container: #00201e;
+  --lakmud-on-primary: #ffffff;
+
+  /* Status */
+  --lakmud-success: #146c2e;
+  --lakmud-success-container: #a7f3b7;
+  --lakmud-warning: #7a5900;
+  --lakmud-warning-container: #ffdf9b;
+  --lakmud-error: #b3261e;
+  --lakmud-error-container: #f9dedc;
+  --lakmud-info: #0a59aa;
+  --lakmud-info-container: #d8e2ff;
+
+  /* Accent amber — pakai terbatas: chip "Nanti", highlight, aksen (docs/20 §2.3) */
+  --lakmud-accent: #b45309;
+  --lakmud-accent-container: #fef3c7;
+  --lakmud-on-accent-container: #451a03;
+
+  /* Elevation (thin, professional) */
+  --lakmud-elevation-1: 0 1px 2px rgba(0, 0, 0, .06), 0 1px 3px rgba(0, 0, 0, .08);
+  --lakmud-elevation-2: 0 2px 4px rgba(0, 0, 0, .07), 0 4px 8px rgba(0, 0, 0, .08);
+
+  /* Typography (Instrument Sans self-hosted via Vite bunny plugin) */
+  --lakmud-font: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+}
