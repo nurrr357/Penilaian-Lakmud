@@ -66,7 +66,7 @@ Ketentuan penting:
 - Jangan menggunakan `APP_KEY` dari mesin development. Buat key baru satu kali di server dan jangan menggantinya setelah aplikasi digunakan.
 - Jangan memakai user database `root`.
 - `APP_URL` harus memakai domain final dan `https://`.
-- Biarkan `DEMO_PASSWORD` kosong di production. Seeder membuat password acak jika akun operator belum ada.
+- Isi `OPERATOR_EMAIL` dengan alamat asli dan `OPERATOR_PASSWORD` dengan kata sandi kuat sebelum seeding pertama, lalu hapus nilai `OPERATOR_PASSWORD` dari `.env` setelah seeding berhasil (lihat §4). Tanpa kata sandi, seeder sengaja berhenti di production; kata sandi acak tidak dipakai karena berarti tidak ada seorang pun yang bisa login.
 - Jika server belum menggunakan HTTPS, jangan membuka aplikasi ke publik. Pasang TLS terlebih dahulu.
 
 ## 4. Database
@@ -77,14 +77,33 @@ Buat database dan user khusus aplikasi, lalu jalankan:
 php artisan migrate --force
 ```
 
-Untuk instalasi pertama yang membutuhkan role, permission, dan akun operator, isi `DEMO_PASSWORD` sementara di `.env` dengan password kuat, lalu jalankan:
+Untuk instalasi pertama, isi dulu `OPERATOR_EMAIL` dan `OPERATOR_PASSWORD` di `.env` (lihat §3), lalu jalankan:
 
 ```bash
 php artisan config:clear
 php artisan db:seed --force
 ```
 
-Seeder membuat akun `operator@example.test` pada instalasi baru. Setelah seeding berhasil, hapus nilai `DEMO_PASSWORD` dari `.env`, lalu jalankan `php artisan config:clear`. Jangan memasukkan password ke repository, perintah shell, tiket, atau dokumentasi. `firstOrCreate` tidak mengubah password akun yang sudah ada; pada deployment pembaruan, pertahankan akun production yang sudah ada dan jangan mengandalkan seeder untuk mereset password.
+Seeder membuat peran `operator_penilaian`, 21 izin panel, dan satu akun operator untuk `OPERATOR_EMAIL`. Kalau kata sandinya kosong, seeder berhenti dengan pesan yang menyebut nama variabelnya: akun berkata sandi acak tidak bisa dipakai login, jadi lebih baik gagal sekarang. Setelah seeding berhasil, hapus nilai `OPERATOR_PASSWORD` dari `.env`, lalu jalankan `php artisan config:clear`. Jangan memasukkan password ke repository, perintah shell, tiket, atau dokumentasi. `firstOrCreate` tidak mengubah password akun yang sudah ada; pada deployment pembaruan, pertahankan akun production yang sudah ada dan jangan mengandalkan seeder untuk mereset password.
+
+### 4.1 Data kegiatan nyata
+
+Seeder dasar tidak pernah membuat data contoh. Data kegiatan diisi dari berkas CSV yang dihasilkan di mesin yang memiliki berkas Excel sumbernya:
+
+```bash
+python python_instruct/excel_to_seed_csv.py "C:/path/ke/berkas.xlsx"
+```
+
+Hasilnya `storage/app/seed/peserta.csv` dan `storage/app/seed/penilaian.csv`. Keduanya memuat data pribadi 702 peserta, jadi **tidak ikut repository** (dikecualikan lewat `storage/app/.gitignore`) dan harus diunggah manual ke `<root-proyek>/storage/app/seed/` dengan izin baca untuk user web server.
+
+Kalau database masih membawa kegiatan demo dari pengembangan, bersihkan dulu, lalu isi data nyata:
+
+```bash
+php artisan db:seed --class=PurgeDemoDataSeeder --force
+php artisan db:seed --class=LakmudDataSeeder --force
+```
+
+`LakmudDataSeeder` berhenti dengan pesan yang jelas kalau berkas CSV tidak ada, jumlah peserta bukan 702, atau ada nilai di luar rentang yang ditentukan (pesannya menyebut baris dan kolom yang bermasalah). Seeder ini mengisi kegiatan, 15 materi, 702 peserta beserta pendaftarannya, absensi, nilai pretest dan posttest, serta tiga aspek; snapshot MOORA sengaja dikosongkan karena dihitung lewat tombol Hitung MOORA di menu Perhitungan. Semua penulisan memakai upsert sehingga aman dijalankan ulang, tetapi kegiatan yang sudah dikunci harus dibuka dulu lewat menu Hasil. Setelah selesai, bandingkan tabel ringkasan yang dicetak seeder dengan jumlah pada berkas Excel sumber.
 
 > Sebelum menjalankan migrasi pada database yang sudah berisi data, buat dan verifikasi backup database di luar direktori proyek.
 

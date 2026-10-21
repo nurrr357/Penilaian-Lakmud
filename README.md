@@ -29,7 +29,7 @@ npm run build
 php artisan serve
 ```
 
-Akun operator hasil seeder: `operator@example.test`. Password berasal dari `DEMO_PASSWORD` dan tidak disimpan dalam repository.
+Akun operator hasil seeder: `operator@example.test`, dengan kata sandi dari `DEMO_PASSWORD` (tidak disimpan dalam repository). Untuk produksi, seeder membaca `OPERATOR_EMAIL` dan `OPERATOR_PASSWORD`; langkah lengkapnya ada di `docs/deployment-production.md`.
 
 ## Pengujian
 

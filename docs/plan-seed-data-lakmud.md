@@ -93,13 +93,13 @@ Langkah wajib sebelum menghapus:
 Berkas baru `python_instruct/excel_to_seed_csv.py` (Python + openpyxl, sudah tersedia) menghasilkan:
 
 - `storage/app/seed/peserta.csv` → `no,nama`
-- `storage/app/seed/penilaian.csv` → `no,materi_no,aspek1,aspek2,aspek3,aspek4,aspek5,aspek6`
+- `storage/app/seed/penilaian.csv` → `no,materi_no,materi_nama,aspek1,aspek2,aspek3,aspek4,aspek5,aspek6` (kolom `materi_nama` ditambahkan saat eksekusi supaya nama 15 materi ikut terseed tanpa berkas ketiga)
 
 `storage/app/*` sudah tercakup `.gitignore` (terverifikasi `git check-ignore`), jadi data pribadi 702 orang tidak masuk git. Saat deploy, CSV diunggah manual. Seeder membaca CSV dengan `fgetcsv` — **tanpa dependency baru**.
 
 ### 7.2 Seeder
 
-Berkas baru `database/seeders/LakmudDataSeeder.php`, satu DB transaction, semua penulisan `updateOrCreate` pada kunci unik komposit (idempoten):
+Berkas baru `database/seeders/LakmudDataSeeder.php`, satu DB transaction, semua penulisan memakai `upsert` batch pada kunci unik komposit (idempoten). Penyimpangan dari draf awal (`updateOrCreate` per baris) dicatat di sini: 31.590 baris nilai membuat `updateOrCreate` menjadi ±63.000 query, sedangkan `upsert` (`INSERT ... ON DUPLICATE KEY UPDATE`) cukup 11 query per tabel — terukur 3,8–8,5 detik dengan kunci unik dan semantik idempotensi yang sama.
 
 | Tabel | Kunci |
 |---|---|
@@ -156,3 +156,36 @@ Tidak ada perubahan pada `app/`, `routes/`, `resources/`, `config/`, `composer.j
 
 1. **Nama tempat (venue)** sebenarnya — dibutuhkan untuk mengganti nilai sementara; mohon dikirim saat tersedia.
 2. **Organisasi** — ditulis `IpnuIppnu PC Kabupaten Malang` (persis seperti brief). Konfirmasi bila sebaiknya `IPNU IPPNU PC Kabupaten Malang`.
+
+## 12. Status eksekusi (2026-10-21 13:0x SEAST)
+
+Semua langkah §10 selesai, kecuali commit (menunggu user menguji) dan butir §8.8.
+
+| Butir verifikasi §8 | Hasil terukur |
+|---|---|
+| 1 Backup | `storage/app/backup/db_lakmud_penilaian_20261021_130257.sql`, 640 KB, gitignored |
+| 2 Data demo | kegiatan #6 "Demo verifikasi MOORA" (15 materi, 3 pendaftaran, 15 absensi, 31 nilai, 15 aspek, 2 snapshot) dihapus; lalu 9 peserta yatim (sisa uji browser: "Peserta demonstrasi" ×3, "Edited peserta" ×4, "huda", "fiqri") dihapus → `participants` 9 → 3 → **702** (hanya peserta Lakmud) |
+| 3 Baris | kegiatan 1; materi 15 (aktif 15); `event_participants` 702 dengan `sequence_number` 1–702 unik tanpa bolong; absensi 10.530; nilai 21.060; aspek 10.530; **`moora_runs` 0, `moora_results` 0** |
+| 4 Kelengkapan | dashboard "15 / 15 materi aktif · 702 peserta · Status hasil: belum dihitung"; setiap baris "90 / 90 Lengkap"; tombol Hitung MOORA ada dan **aktif** (`disabled=false`) |
+| 5 Cross-check Excel | 702 peserta: **C1–C6 = 0 sel berbeda**, normalisasi = 0 sel, Yi = 0 baris (selisih maks 6,9e-18), peringkat = 0 baris |
+| 6 Idempotensi | seeder dijalankan dua kali; hitungan identik, tanpa baris kembar |
+| 7 Test | `artisan test --compact` → 41 test / 743 assertion lulus |
+| 8 Uji Hitung MOORA | **menunggu user** — snapshot hasil sengaja tidak diisi |
+
+Angka pembanding dari database (moora-v1, identik dengan Excel):
+
+- Pembagi `D` = 43,046486500062 | 5571,595103738247 | 5976,068691037613 | 5970,857894808752 | 5989,572104917012 | 6338,641889237789
+- Peringkat 1–5 = peserta No 47, 614, 280, 60, 620
+- Contoh: No 1 → Yi 0,032782704385449, peringkat 190
+
+Berkas hasil eksekusi:
+
+| Berkas | Isi |
+|---|---|
+| `python_instruct/excel_to_seed_csv.py` | konverter + validasi 702/15/10.530 sebelum menulis CSV |
+| `database/seeders/LakmudDataSeeder.php` | pengisi satu kegiatan dari CSV (transaksi tunggal, upsert batch) |
+| `database/seeders/PurgeDemoDataSeeder.php` | penghapus kegiatan demo + peserta yatim, mencetak daftar target lebih dulu |
+| `storage/app/seed/{peserta,penilaian}.csv` | 17 KB + 632 KB, **gitignored**, unggah manual saat deploy |
+| `storage/app/backup/db_lakmud_penilaian_20261021_130257.sql` | cadangan sebelum penghapusan |
+
+Catatan kualitas data: 702 peserta dengan **696 nama unik** (6 baris bernama sama persis). Kunci join tetap kolom `No`, bukan nama.
