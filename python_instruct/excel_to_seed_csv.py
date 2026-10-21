@@ -1,7 +1,8 @@
 """Konverter Excel -> CSV untuk seeder LakmudDataSeeder.
 
 Sumber : Database IPNU IPPNU PAC Kabupaten Malang - MOORA Kehadiran COST Final - MAKESTA ke LAKMUD.xlsx
-Keluaran: storage/app/seed/peserta.csv, storage/app/seed/penilaian.csv (gitignored, unggah manual ke server)
+Keluaran: storage/app/seed/peserta.csv, storage/app/seed/penilaian.csv (ikut repository; keduanya
+          memuat data pribadi peserta, lihat docs/deployment-production.md §4.1)
 
 Pemetaan kolom (terverifikasi terhadap sheet sumber):
   DATABASE PESERTA     : header baris 3, data baris 4  -> kolom 0 = No, kolom 5 = Nama

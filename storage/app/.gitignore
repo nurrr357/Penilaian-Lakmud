@@ -2,3 +2,5 @@
 !private/
 !public/
 !.gitignore
+# Berkas seed di storage/app/seed/*.csv sengaja ikut repository lewat `git add -f` (keputusan pemilik
+# data 21 Okt 2026). Aturan `*` di atas tidak berlaku untuk berkas yang sudah terlacak.

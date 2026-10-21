@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
     /**
      * Isi dasar setiap instalasi, termasuk produksi: 21 izin, satu peran operator_penilaian, dan
      * satu akun operator. Tidak ada data contoh di sini; data kegiatan nyata diisi LakmudDataSeeder
-     * dari berkas CSV yang diunggah manual.
+     * dari berkas CSV di storage/app/seed yang ikut repository.
      *
      * Aman dijalankan ulang: `firstOrCreate` tidak pernah mengubah kata sandi akun yang sudah ada,
      * jadi menjalankan seeder ini pada deployment pembaruan tidak mereset akun pengguna.

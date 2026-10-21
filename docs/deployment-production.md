@@ -94,7 +94,7 @@ Seeder dasar tidak pernah membuat data contoh. Data kegiatan diisi dari berkas C
 python python_instruct/excel_to_seed_csv.py "C:/path/ke/berkas.xlsx"
 ```
 
-Hasilnya `storage/app/seed/peserta.csv` dan `storage/app/seed/penilaian.csv`. Keduanya memuat data pribadi 702 peserta, jadi **tidak ikut repository** (dikecualikan lewat `storage/app/.gitignore`) dan harus diunggah manual ke `<root-proyek>/storage/app/seed/` dengan izin baca untuk user web server.
+Hasilnya `storage/app/seed/peserta.csv` dan `storage/app/seed/penilaian.csv`. Keduanya **ikut repository**, jadi `git pull` di server sudah membawanya dan tidak ada unggah manual. Konsekuensinya harus disadari: `peserta.csv` memuat nama asli 702 peserta, sehingga repository ini menyimpan data pribadi. Repository publik berarti nama tersebut terbit di internet dan menetap di riwayat git. Karena itu repository ini sebaiknya privat; kalau isinya pernah terbit, menghapusnya menuntut penulisan ulang riwayat, tidak cukup commit penghapusan.
 
 Kalau database masih membawa kegiatan demo dari pengembangan, bersihkan dulu, lalu isi data nyata:
 

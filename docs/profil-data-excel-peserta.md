@@ -110,7 +110,7 @@ Rubrik ini **cocok** dengan yang sudah diimplementasikan aplikasi (`CertificateS
 3. Seeder idempoten lewat `updateOrCreate`, dijalankan eksplisit: `php artisan db:seed --class=...Seeder`, bukan lewat `DatabaseSeeder` bawaan.
 4. Verifikasi: setelah seed, jalankan Hitung MOORA di aplikasi lalu bandingkan `yi` dan `rank` dengan kolom `Skor MOORA Yi` dan `Rank MOORA` pada sheet REKAP TOTAL ASPEK.
 
-Berkas data bersifat **data pribadi 702 orang** (nama, alamat, HP/WA, email). Default: berkas data diletakkan di luar git dan diunggah manual ke server.
+Berkas data bersifat **data pribadi 702 orang** (nama, alamat, HP/WA, email). Sejak 21 Okt 2026 kedua CSV seed (`peserta.csv`, `penilaian.csv`) di-commit ke repository atas keputusan pemilik data, jadi perlakukan repository ini sebagai berisi data pribadi dan jaga tetap privat.
 
 ## 10. Keputusan yang masih menunggu brief user
 

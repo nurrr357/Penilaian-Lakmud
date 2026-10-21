@@ -95,7 +95,7 @@ Berkas baru `python_instruct/excel_to_seed_csv.py` (Python + openpyxl, sudah ter
 - `storage/app/seed/peserta.csv` → `no,nama`
 - `storage/app/seed/penilaian.csv` → `no,materi_no,materi_nama,aspek1,aspek2,aspek3,aspek4,aspek5,aspek6` (kolom `materi_nama` ditambahkan saat eksekusi supaya nama 15 materi ikut terseed tanpa berkas ketiga)
 
-`storage/app/*` sudah tercakup `.gitignore` (terverifikasi `git check-ignore`), jadi data pribadi 702 orang tidak masuk git. Saat deploy, CSV diunggah manual. Seeder membaca CSV dengan `fgetcsv` — **tanpa dependency baru**.
+`storage/app/*` tercakup `.gitignore`, tetapi sejak 21 Okt 2026 kedua CSV di-commit dengan `git add -f` atas keputusan pemilik data: data pribadi 702 orang kini masuk git dan `git pull` di server sudah membawanya. Seeder membaca CSV dengan `fgetcsv`, **tanpa dependency baru**.
 
 ### 7.2 Seeder
 
@@ -135,7 +135,7 @@ Tidak ada perubahan pada `app/`, `routes/`, `resources/`, `config/`, `composer.j
 | Risiko | Penanganan |
 |---|---|
 | Nama peserta tidak unik (3× "Nurul Hidayah") | key lewat `sequence_number` dari kolom `No` |
-| PII 702 orang masuk git | CSV di `storage/app/seed/` yang gitignored, unggah manual ke server |
+| PII 702 orang masuk git | **Diubah 21 Okt 2026:** CSV di-commit ke repository atas keputusan pemilik data (repo saat itu publik). Sebelumnya gitignored dan diunggah manual. Mitigasi yang tersisa: jadikan repo privat, atau tulis ulang riwayat bila sudah pernah terbit |
 | Penghapusan demo mengenai data lain | backup + cetak daftar target + hapus peserta hanya yang tanpa pendaftaran |
 | Nilai di luar aturan lolos | seeder memvalidasi ulang setiap nilai dan berhenti bila gagal |
 | Seed tidak lewat FormRequest, tidak menulis activity_log | diterima untuk pemuatan data sekali jalan |
@@ -185,7 +185,7 @@ Berkas hasil eksekusi:
 | `python_instruct/excel_to_seed_csv.py` | konverter + validasi 702/15/10.530 sebelum menulis CSV |
 | `database/seeders/LakmudDataSeeder.php` | pengisi satu kegiatan dari CSV (transaksi tunggal, upsert batch) |
 | `database/seeders/PurgeDemoDataSeeder.php` | penghapus kegiatan demo + peserta yatim, mencetak daftar target lebih dulu |
-| `storage/app/seed/{peserta,penilaian}.csv` | 17 KB + 632 KB, **gitignored**, unggah manual saat deploy |
+| `storage/app/seed/{peserta,penilaian}.csv` | 17 KB + 632 KB, **ikut repository** sejak 21 Okt 2026 (memuat nama 702 peserta), sebelumnya gitignored |
 | `storage/app/backup/db_lakmud_penilaian_20261021_130257.sql` | cadangan sebelum penghapusan |
 
 Catatan kualitas data: 702 peserta dengan **696 nama unik** (6 baris bernama sama persis). Kunci join tetap kolom `No`, bukan nama.

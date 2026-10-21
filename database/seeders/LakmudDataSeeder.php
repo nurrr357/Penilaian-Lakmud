@@ -9,7 +9,8 @@ use RuntimeException;
 /**
  * Isi satu kegiatan dari hasil konversi Excel (python_instruct/excel_to_seed_csv.py).
  *
- * Sumber  : storage/app/seed/peserta.csv, storage/app/seed/penilaian.csv (gitignored, unggah manual)
+ * Sumber  : storage/app/seed/peserta.csv, storage/app/seed/penilaian.csv (ikut repository; keputusan
+ *            pemilik data 21 Okt 2026, lihat docs/deployment-production.md §4.1)
  * Cakupan : kegiatan, 15 materi, 702 peserta + pendaftaran, 6 aspek per peserta per materi.
  * Tidak diisi: moora_runs dan moora_results — hasil perhitungan dijalankan lewat tombol Hitung MOORA.
  *
