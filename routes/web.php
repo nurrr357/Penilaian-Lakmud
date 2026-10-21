@@ -2,11 +2,13 @@
 
 use App\Http\Controllers\PanelController;
 use App\Services\PanelPermissions;
+use App\Services\PublicSitemap;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
 
+Route::get('/sitemap.xml', fn () => PublicSitemap::response())->name('sitemap');
 Route::middleware('guest')->group(function () {
     Route::get('/login', fn () => view('login'))->name('login');
     Route::post('/login', function (Request $request) {
