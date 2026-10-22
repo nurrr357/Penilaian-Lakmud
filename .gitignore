@@ -31,3 +31,6 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /.hermes
+penilaianlakmud.mochhuda.id/vendor-*.tar.gz
+composer.json.bak-*
+composer.lock.bak-*
