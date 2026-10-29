@@ -6,6 +6,10 @@ class PanelPermissions
 {
     public const PAGES = ['dashboard' => 'events.view', 'kegiatan' => 'events.view', 'materi' => 'events.view', 'peserta' => 'participants.view', 'absensi' => 'attendance.view', 'pretest' => 'assessments.pretest.view', 'posttest' => 'assessments.posttest.view', 'keaktifan' => 'assessments.activity.view', 'etika' => 'assessments.ethics.view', 'pemahaman' => 'assessments.understanding.view', 'perhitungan' => 'results.view', 'hasil' => 'results.view', 'panduan' => 'events.view'];
 
+    public const AUDIT_LOGS = 'audit_logs.view';
+
+    public const KETUA = ['events.view', 'participants.view', 'attendance.view', 'assessments.pretest.view', 'assessments.posttest.view', 'assessments.activity.view', 'assessments.ethics.view', 'assessments.understanding.view', 'results.view', 'results.finalize', self::AUDIT_LOGS];
+
     public const INPUTS = ['absensi' => 'attendance.input', 'pretest' => 'assessments.pretest.input', 'posttest' => 'assessments.posttest.input', 'keaktifan' => 'assessments.activity.input', 'etika' => 'assessments.ethics.input', 'pemahaman' => 'assessments.understanding.input'];
 
     public const ALL = ['events.view', 'events.manage', 'participants.view', 'participants.manage', 'materials.manage', 'attendance.view', 'attendance.input', 'assessments.pretest.view', 'assessments.pretest.input', 'assessments.activity.view', 'assessments.activity.input', 'assessments.ethics.view', 'assessments.ethics.input', 'assessments.understanding.view', 'assessments.understanding.input', 'assessments.posttest.view', 'assessments.posttest.input', 'results.view', 'results.calculate', 'results.finalize', 'results.unlock'];
