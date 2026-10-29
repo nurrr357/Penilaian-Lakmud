@@ -20,7 +20,7 @@
 @can(\App\Services\PanelPermissions::PAGES[$path])<a class="app-nav-link {{ request()->is($path) ? 'is-active' : '' }}" @if(request()->is($path)) aria-current="page" @endif href="/{{ $path }}{{ isset($event) && $event ? '?event_id='.$event->id : '' }}"><md-icon aria-hidden="true">{{ ['absensi'=>'how_to_reg','pretest'=>'quiz','posttest'=>'task_alt','keaktifan'=>'bolt','etika'=>'verified_user','pemahaman'=>'psychology'][$path] }}</md-icon><span class="label">{{ $label }}</span></a>@endcan
 @endforeach
 </section>@endif
-@can(\\App\\Services\\PanelPermissions::AUDIT_LOGS)<section class="app-nav-group" aria-labelledby="audit-heading"><h2 class="app-nav-group__title" id="audit-heading">AUDIT</h2>
+@can('audit_logs.view')<section class="app-nav-group" aria-labelledby="audit-heading"><h2 class="app-nav-group__title" id="audit-heading">AUDIT</h2>
 <a class="app-nav-link {{ request()->is('logs') ? 'is-active' : '' }}" @if(request()->is('logs')) aria-current="page" @endif href="/logs"><md-icon aria-hidden="true">history</md-icon><span class="label">Log Aktivitas</span></a>
 </section>@endcan
 @can('results.view')<section class="app-nav-group" aria-labelledby="hasil-heading"><h2 class="app-nav-group__title" id="hasil-heading">HASIL</h2>
