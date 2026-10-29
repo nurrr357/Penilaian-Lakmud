@@ -25,7 +25,17 @@
                         $properties = is_array($log->properties)
                             ? $log->properties
                             : (json_decode((string) $log->properties, true) ?: []);
-                        $details = collect($properties)->except(['payload', 'password', '_token'])->all();
+                        $sanitize = function ($value) use (&$sanitize) {
+                            if (! is_array($value)) {
+                                return $value;
+                            }
+
+                            return collect($value)
+                                ->reject(fn ($item, $key) => in_array(strtolower((string) $key), ['password', 'password_confirmation', 'current_password', '_token', 'remember_token'], true))
+                                ->map(fn ($item) => $sanitize($item))
+                                ->all();
+                        };
+                        $details = $sanitize($properties);
                         $subject = $log->subject_type
                             ? class_basename($log->subject_type).($log->subject_id ? ' #'.$log->subject_id : '')
                             : '—';
