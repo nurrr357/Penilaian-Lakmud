@@ -20,6 +20,9 @@
 @can(\App\Services\PanelPermissions::PAGES[$path])<a class="app-nav-link {{ request()->is($path) ? 'is-active' : '' }}" @if(request()->is($path)) aria-current="page" @endif href="/{{ $path }}{{ isset($event) && $event ? '?event_id='.$event->id : '' }}"><md-icon aria-hidden="true">{{ ['absensi'=>'how_to_reg','pretest'=>'quiz','posttest'=>'task_alt','keaktifan'=>'bolt','etika'=>'verified_user','pemahaman'=>'psychology'][$path] }}</md-icon><span class="label">{{ $label }}</span></a>@endcan
 @endforeach
 </section>@endif
+@can('audit_logs.view')<section class="app-nav-group" aria-labelledby="audit-heading"><h2 class="app-nav-group__title" id="audit-heading">AUDIT</h2>
+<a class="app-nav-link {{ request()->is('logs') ? 'is-active' : '' }}" @if(request()->is('logs')) aria-current="page" @endif href="/logs"><md-icon aria-hidden="true">history</md-icon><span class="label">Log Aktivitas</span></a>
+</section>@endcan
 @can('results.view')<section class="app-nav-group" aria-labelledby="hasil-heading"><h2 class="app-nav-group__title" id="hasil-heading">HASIL</h2>
 @foreach(['perhitungan'=>'Perhitungan','hasil'=>'Hasil Perangkingan'] as $path=>$label)<a class="app-nav-link {{ request()->is($path) ? 'is-active' : '' }}" @if(request()->is($path)) aria-current="page" @endif href="/{{ $path }}{{ isset($event) && $event ? '?event_id='.$event->id : '' }}"><md-icon aria-hidden="true">{{ $path === 'perhitungan' ? 'calculate' : 'leaderboard' }}</md-icon><span class="label">{{ $label }}</span></a>@endforeach
 </section>@endcan
@@ -27,7 +30,7 @@
 <a class="app-nav-link {{ request()->is('panduan') ? 'is-active' : '' }}" @if(request()->is('panduan')) aria-current="page" @endif href="/panduan{{ isset($event) && $event ? '?event_id='.$event->id : '' }}"><md-icon aria-hidden="true">help</md-icon><span class="label">Panduan singkat</span></a>
 </section>@endcan
 </nav>
-<div class="app-sidebar__footer">Operator penilaian<br>Formula moora-v1</div>
+<div class="app-sidebar__footer">{{ auth()->user()->getRoleNames()->map(fn ($role) => str($role)->replace('_', ' ')->title())->join(', ') ?: 'Pengguna' }}<br>Formula moora-v1</div>
 </aside><button id="backdrop" class="app-backdrop" data-sidebar-backdrop tabindex="-1" aria-label="Tutup menu" hidden></button>
 <div class="app-main"><header class="app-topbar">
 <button id="menu" class="app-icon-btn" data-sidebar-toggle type="button" aria-controls="sidebar" aria-expanded="true" aria-label="Menu"><md-icon aria-hidden="true">menu</md-icon></button>

@@ -26,7 +26,7 @@ class PanelService
             if ($action !== 'calculate') {
                 $this->stale($id);
             }
-            activity()->causedBy(auth()->user())->withProperties(['lakmud_event_id' => $id, 'payload' => request()->except(['_token', 'password'])])->log($action);
+            activity()->causedBy(auth()->user())->withProperties(['lakmud_event_id' => $id, 'payload' => request()->except(['_token', 'password', 'password_confirmation', 'current_password', 'remember_token'])])->log($action);
 
             return $result;
         });

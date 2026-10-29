@@ -14,8 +14,8 @@ use Spatie\Permission\PermissionRegistrar;
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Isi dasar setiap instalasi, termasuk produksi: 21 izin, satu peran operator_penilaian, dan
-     * satu akun operator. Tidak ada data contoh di sini; data kegiatan nyata diisi LakmudDataSeeder
+     * Isi dasar setiap instalasi: izin panel, peran operator_penilaian dan ketua, serta
+     * satu akun operator. Ketua dibuat tanpa akun pengguna otomatis. Data kegiatan nyata diisi LakmudDataSeeder
      * dari berkas CSV di storage/app/seed yang ikut repository.
      *
      * Aman dijalankan ulang: `firstOrCreate` tidak pernah mengubah kata sandi akun yang sudah ada,
@@ -29,13 +29,16 @@ class DatabaseSeeder extends Seeder
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        $permissions = PanelPermissions::ALL;
+        $permissions = array_values(array_unique([...PanelPermissions::ALL, PanelPermissions::AUDIT_LOGS]));
         foreach ($permissions as $permission) {
             Permission::findOrCreate($permission, 'web');
         }
 
         $role = Role::findOrCreate('operator_penilaian', 'web');
-        $role->syncPermissions($permissions);
+        $role->syncPermissions(PanelPermissions::ALL);
+
+        $ketua = Role::findOrCreate('ketua', 'web');
+        $ketua->syncPermissions(PanelPermissions::KETUA);
 
         $user = User::firstOrCreate(
             ['email' => $this->email()],
@@ -43,7 +46,8 @@ class DatabaseSeeder extends Seeder
         );
         $user->syncRoles([$role]);
 
-        $this->command?->info(sprintf('Peran operator_penilaian siap dengan %d izin.', count($permissions)));
+        $this->command?->info(sprintf('Peran operator_penilaian siap dengan %d izin.', count(PanelPermissions::ALL)));
+        $this->command?->info(sprintf('Peran ketua siap dengan %d izin; akun Ketua tidak dibuat otomatis.', count(PanelPermissions::KETUA)));
         $this->command?->info(sprintf('Akun operator %s siap.', $user->email));
 
         if (app()->environment('production') && str_ends_with($user->email, '@example.test')) {

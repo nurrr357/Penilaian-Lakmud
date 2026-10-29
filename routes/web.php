@@ -32,6 +32,7 @@ Route::middleware('auth')->group(function () {
     foreach (['/' => 'dashboard', '/kegiatan' => 'kegiatan', '/materi' => 'materi', '/peserta' => 'peserta', '/absensi' => 'absensi', '/pretest' => 'pretest', '/posttest' => 'posttest', '/keaktifan' => 'keaktifan', '/etika' => 'etika', '/pemahaman' => 'pemahaman', '/perhitungan' => 'perhitungan', '/hasil' => 'hasil', '/panduan' => 'panduan'] as $url => $page) {
         Route::get($url, [PanelController::class, 'page'])->defaults('page', $page)->middleware('permission:'.PanelPermissions::PAGES[$page]);
     }
+    Route::get('/logs', [PanelController::class, 'logs'])->middleware('permission:'.PanelPermissions::AUDIT_LOGS)->name('logs.index');
     Route::post('/kegiatan', [PanelController::class, 'event'])->middleware('permission:events.manage');
     Route::match(['put', 'delete'], '/kegiatan/{event}', [PanelController::class, 'event'])->whereNumber('event')->middleware('permission:events.manage');
     Route::post('/kegiatan/{event}/{type}', [PanelController::class, 'child'])->whereNumber('event')->whereIn('type', ['materi', 'peserta']);

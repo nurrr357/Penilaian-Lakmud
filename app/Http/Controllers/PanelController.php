@@ -38,6 +38,23 @@ class PanelController extends Controller
         ]);
     }
 
+    public function logs(Request $request)
+    {
+        $logs = DB::table('activity_log as a')
+            ->leftJoin('users as u', 'u.id', '=', 'a.causer_id')
+            ->orderByDesc('a.created_at')
+            ->orderByDesc('a.id')
+            ->select([
+                'a.id', 'a.log_name', 'a.description', 'a.subject_type', 'a.subject_id',
+                'a.causer_id', 'a.properties', 'a.created_at',
+                'u.name as causer_name', 'u.email as causer_email',
+            ])
+            ->paginate(25)
+            ->withQueryString();
+
+        return view('logs', compact('logs'));
+    }
+
     private function tableQuery(Request $request): array
     {
         return array_filter([
