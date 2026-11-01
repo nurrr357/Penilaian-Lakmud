@@ -47,6 +47,7 @@ class WeightsManagementTest extends TestCase
             ->assertViewHas('terkunci', null)
             ->assertSee('Kriteria &amp; Bobot', false)
             ->assertSee('Simpan bobot')
+            ->assertDontSee('required readonly disabled>', false)
             ->assertDontSee('Bobot snapshot run', false);
     }
 
@@ -130,6 +131,7 @@ class WeightsManagementTest extends TestCase
 
         $this->actingAs($pembaca)->get('/kriteria')
             ->assertOk()
+            ->assertSee('required readonly disabled>', false)
             ->assertDontSee('Simpan bobot')
             ->assertSee('hanya dapat membaca bobot');
         $this->post('/kriteria', ['weights' => [0.05, 0.05, 0.30, 0.20, 0.20, 0.20]])->assertForbidden();

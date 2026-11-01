@@ -13,6 +13,7 @@
         ['kode' => 'C6', 'nama' => 'Posttest', 'jenis' => 'Benefit', 'sumber' => 'Jumlah nilai posttest 15 materi, masing-masing 10 sampai 20.'],
     ];
     $jumlah = array_sum($bobot);
+    $bacaSaja = $terkunci !== null || ! auth()->user()->can('criteria.manage');
 @endphp
 <div class="page-header"><div><h1>Kriteria &amp; Bobot</h1><p class="subtitle">Bobot berlaku untuk semua kegiatan, bukan per kegiatan.</p></div></div>
 @if(session('success'))<div class="lak-alert lak-alert--success" role="status">{{ session('success') }}</div>@endif
@@ -38,7 +39,7 @@
 <td>{{ $baris['jenis'] }}</td>
 <td>{{ $baris['sumber'] }}</td>
 <td class="t-right">
-<input id="weights-{{ $index }}" class="lak-input" type="number" name="weights[{{ $index }}]" aria-label="Bobot {{ $baris['kode'] }} {{ $baris['nama'] }}" value="{{ old('weights.'.$index, $bobot[$index]) }}" min="0.0001" max="1" step="any" required @readonly($terkunci !== null) @disabled($terkunci !== null)>
+<input id="weights-{{ $index }}" class="lak-input" type="number" name="weights[{{ $index }}]" aria-label="Bobot {{ $baris['kode'] }} {{ $baris['nama'] }}" value="{{ old('weights.'.$index, $bobot[$index]) }}" min="0.0001" max="1" step="any" required @readonly($bacaSaja) @disabled($bacaSaja)>
 </td>
 </tr>
 @endforeach
