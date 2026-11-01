@@ -14,9 +14,9 @@ use Spatie\Permission\PermissionRegistrar;
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Isi dasar setiap instalasi, termasuk produksi: 21 izin, satu peran operator_penilaian, dan
-     * satu akun operator. Tidak ada data contoh di sini; data kegiatan nyata diisi LakmudDataSeeder
-     * dari berkas CSV di storage/app/seed yang ikut repository.
+     * Isi dasar setiap instalasi, termasuk produksi: 23 izin, peran operator_penilaian, peran
+     * ketua, satu akun operator, dan akun ketua opsional dari environment. Tidak ada data contoh
+     * di sini; data kegiatan nyata diisi LakmudDataSeeder dari berkas CSV di storage/app/seed.
      *
      * Aman dijalankan ulang: `firstOrCreate` tidak pernah mengubah kata sandi akun yang sudah ada,
      * jadi menjalankan seeder ini pada deployment pembaruan tidak mereset akun pengguna.
@@ -34,14 +34,48 @@ class DatabaseSeeder extends Seeder
             Permission::findOrCreate($permission, 'web');
         }
 
+        // Operator mengerjakan seluruh alur penilaian, TANPA membaca log aktivitas:
+        // jejak audit hanya untuk ketua. activity.view sengaja dikecualikan.
         $role = Role::findOrCreate('operator_penilaian', 'web');
-        $role->syncPermissions($permissions);
+        $role->syncPermissions(array_values(array_filter(
+            $permissions,
+            fn (string $p) => $p !== PanelPermissions::ACTIVITY_VIEW,
+        )));
 
         $user = User::firstOrCreate(
             ['email' => $this->email()],
             ['name' => 'Operator Penilaian', 'password' => $this->password()],
         );
         $user->syncRoles([$role]);
+
+        // Ketua memantau: semua izin baca + activity.view + menyetujui finalisasi hasil.
+        // Tanpa izin input, manage, calculate, unlock — input nilai dan buka kunci tetap
+        // tugas operator.
+        $ketuaRole = Role::findOrCreate('ketua', 'web');
+        $ketuaRole->syncPermissions(array_merge(
+            array_filter($permissions, fn (string $p) => str_ends_with($p, '.view')),
+            [PanelPermissions::WEIGHTS_VIEW, PanelPermissions::ACTIVITY_VIEW],
+        ));
+        $ketuaRole->givePermissionTo('results.finalize');
+
+        // Akun ketua tidak punya kata sandi default. Tanpa KETUA_EMAIL dan KETUA_PASSWORD,
+        // akun tidak dibuat; ini mencegah kredensial yang diketahui publik masuk ke server.
+        $ketuaEmail = (string) config('panel.ketua.email');
+        $ketuaPassword = (string) config('panel.ketua.password');
+        if ($ketuaEmail !== '' && $ketuaPassword !== '') {
+            $ketua = User::firstOrCreate(
+                ['email' => $ketuaEmail],
+                [
+                    'name' => (string) config('panel.ketua.name'),
+                    'username' => config('panel.ketua.username') ?: null,
+                    'password' => $ketuaPassword,
+                ],
+            );
+            $ketua->syncRoles([$ketuaRole]);
+            $this->command?->info(sprintf('Akun ketua %s siap.', $ketua->email));
+        } else {
+            $this->command?->warn('Akun ketua tidak dibuat. Isi KETUA_EMAIL dan KETUA_PASSWORD di .env, jalankan php artisan config:clear, lalu ulangi seeder ini.');
+        }
 
         $this->command?->info(sprintf('Peran operator_penilaian siap dengan %d izin.', count($permissions)));
         $this->command?->info(sprintf('Akun operator %s siap.', $user->email));

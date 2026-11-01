@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Services\PanelPermissions;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
@@ -11,10 +12,50 @@ class GranularPermissionTest extends TestCase
 {
     use DatabaseTransactions;
 
+    public function test_activity_view_permission_exists_and_is_seeded(): void
+    {
+        $this->seed();
+        $this->assertContains('activity.view', PanelPermissions::ALL);
+        $this->assertDatabaseHas('permissions', ['name' => 'activity.view', 'guard_name' => 'web']);
+    }
+
+    public function test_configured_ketua_account_can_login_with_username(): void
+    {
+        config([
+            'panel.ketua.name' => 'Ketua Uji',
+            'panel.ketua.email' => 'ketua@example.test',
+            'panel.ketua.username' => 'ketua',
+            'panel.ketua.password' => 'sandi-ketua-uji',
+        ]);
+
+        $this->seed();
+        $this->assertDatabaseHas('users', ['username' => 'ketua']);
+
+        $ketua = User::where('username', 'ketua')->first();
+        $this->assertNotSame('sandi-ketua-uji', $ketua->password, 'Password tidak boleh tersimpan plaintext.');
+
+        $this->post('/logout'); // pastikan guest
+        // intended() mengembalikan URL terakhir yang diminta ('/'), jadi cek isi halaman
+        // setelah login: '/' mengarah ke dashboard (redirect -> '/dashboard'), bukan ke login.
+        $this->followingRedirects()->post('/login', ['email' => 'ketua', 'password' => 'sandi-ketua-uji'])
+            ->assertOk()
+            ->assertSee('Dashboard', false);
+    }
+
+    public function test_seeder_does_not_create_a_default_admin_account(): void
+    {
+        config(['panel.ketua.email' => null, 'panel.ketua.password' => null]);
+
+        $this->seed();
+
+        $this->assertDatabaseMissing('users', ['username' => 'admin']);
+        $this->assertDatabaseMissing('users', ['email' => 'admin@example.test']);
+    }
+
     public function test_each_page_requires_its_own_permission(): void
     {
         $this->seed();
-        $pages = ['/' => 'events.view', '/kegiatan' => 'events.view', '/absensi' => 'attendance.view', '/pretest' => 'assessments.pretest.view', '/posttest' => 'assessments.posttest.view', '/keaktifan' => 'assessments.activity.view', '/etika' => 'assessments.ethics.view', '/pemahaman' => 'assessments.understanding.view', '/perhitungan' => 'results.view', '/hasil' => 'results.view', '/panduan' => 'events.view'];
+        $pages = ['/dashboard' => 'events.view', '/kegiatan' => 'events.view', '/absensi' => 'attendance.view', '/pretest' => 'assessments.pretest.view', '/posttest' => 'assessments.posttest.view', '/keaktifan' => 'assessments.activity.view', '/etika' => 'assessments.ethics.view', '/pemahaman' => 'assessments.understanding.view', '/perhitungan' => 'results.view', '/hasil' => 'results.view', '/kriteria' => 'criteria.view'];
         foreach ($pages as $url => $permission) {
             Permission::findOrCreate($permission, 'web');
             $user = User::factory()->create();

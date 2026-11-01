@@ -28,7 +28,12 @@ export function mountCharts() {
             strokeWidth: konfigurasi.strokeWidth,
             animate: 0,
             tooltipOptions: {
-                formatTooltipY: nilai => Number(nilai).toFixed(4).replace('.', ','),
+                // Donut hanya memakai kunci ini untuk teks legenda ("Lulus: 689"), karena tooltip
+                // donutnya menampilkan persen. Empat desimal akan menulis "689,0000" pada angka
+                // jumlah peserta yang selalu bulat, jadi donut memakai angka apa adanya.
+                formatTooltipY: konfigurasi.type === 'donut'
+                    ? nilai => Number(nilai)
+                    : nilai => Number(nilai).toFixed(4).replace('.', ','),
             },
         });
     });

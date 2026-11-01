@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\InputRequest;
+use App\Services\MooraWeights;
 use App\Services\PanelService;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
+use Spatie\Activitylog\Models\Activity;
 
 class PanelController extends Controller
 {
@@ -76,31 +77,39 @@ class PanelController extends Controller
         $table = match ($type) {
             'materi' => 'event_materials', 'peserta' => 'event_participants', default => abort(404)
         };
-        $sequence = $type === 'materi' ? 'sequence' : 'sequence_number';
         $data = [];
         if (! $request->isMethod('delete')) {
-            $data = $request->validate(['name' => 'required|string|max:200', 'sequence' => ['required', 'integer', 'min:1', $type === 'materi' ? 'max:15' : 'max:99999', Rule::unique($table, $sequence)->where('lakmud_event_id', $event)->ignore($record)], 'is_active' => 'sometimes|boolean']);
+            $rules = ['name' => 'required|string|max:200'];
+            if ($type === 'materi') {
+                $rules['is_active'] = 'sometimes|boolean';
+            }
+            $data = $request->validate($rules);
             if ($type === 'materi') {
                 $data['is_active'] = $request->boolean('is_active');
-            } else {
-                unset($data['is_active']);
             }
         }
-        $this->panel->mutate($event, function () use ($request, $event, $record, $table, $data) {
+        $this->panel->mutate($event, function () use ($request, $event, $record, $table, $type, $data) {
             $query = DB::table($table)->where('lakmud_event_id', $event)->where('id', $record);
             if ($record) {
                 abort_unless($query->exists(), 404);
             }
-            if ($table === 'event_participants' && ! $request->isMethod('delete')) {
+            if ($request->isMethod('delete')) {
+                $query->delete();
+
+                return;
+            }
+            if ($table === 'event_participants') {
                 $person = $record ? $query->value('participant_id') : DB::table('participants')->insertGetId(['full_name' => $data['name'], 'created_at' => now(), 'updated_at' => now()]);
                 DB::table('participants')->where('id', $person)->update(['full_name' => $data['name'], 'updated_at' => now()]);
                 $data['participant_id'] = $person;
-                $data['sequence_number'] = $data['sequence'];
-                unset($data['name'], $data['sequence']);
+                unset($data['name']);
             }
-            if ($request->isMethod('delete')) {
-                $query->delete();
-            } elseif ($record) {
+            if (! $record) {
+                // Nomor urut tidak lagi diisi operator: baris kegiatan sudah dikunci di
+                // mutate(), jadi dua penambahan bersamaan tidak bisa mendapat nomor sama.
+                $data[$type === 'materi' ? 'sequence' : 'sequence_number'] = $this->nextSequence($event, $type);
+            }
+            if ($record) {
                 $query->update($data + ['updated_at' => now()]);
             } else {
                 DB::table($table)->insert($data + ['lakmud_event_id' => $event, 'created_at' => now(), 'updated_at' => now()]);
@@ -108,6 +117,26 @@ class PanelController extends Controller
         }, $table.'.'.$request->method());
 
         return redirect('/'.$type.'?'.http_build_query(['event_id' => $event] + $this->tableQuery($request)))->with('success', 'Data disimpan.');
+    }
+
+    /**
+     * Nomor urut untuk baris baru. Materi memakai slot kosong terkecil 1 sampai 15 karena
+     * urutannya dipakai sebagai label M1 sampai M15 dan batas 15 materi aktif. Peserta
+     * memakai nomor terbesar ditambah satu supaya urutannya mengikuti pendaftaran.
+     */
+    private function nextSequence(int $event, string $type): int
+    {
+        if ($type === 'materi') {
+            $used = DB::table('event_materials')->where('lakmud_event_id', $event)->pluck('sequence')->map(fn ($n) => (int) $n)->all();
+            for ($candidate = 1; $candidate <= 15; $candidate++) {
+                if (! in_array($candidate, $used, true)) {
+                    return $candidate;
+                }
+            }
+            $this->panel->fail('Materi sudah 15. Hapus satu materi sebelum menambah yang baru.');
+        }
+
+        return (int) DB::table('event_participants')->where('lakmud_event_id', $event)->max('sequence_number') + 1;
     }
 
     public function input(InputRequest $request, int $event, string $kind)
@@ -147,6 +176,43 @@ class PanelController extends Controller
         }, 'inputs.'.$kind);
 
         return redirect('/'.$kind.'?'.http_build_query(['event_id' => $event, 'material_id' => $data['material_id']] + $this->tableQuery($request)))->with('success', 'Penilaian disimpan.');
+    }
+
+    /** Halaman Log Aktivitas: jejak audit read-only. Hanya dibaca, tidak boleh diedit. */
+    public function activityLog(Request $request)
+    {
+        $logs = Activity::query()
+            ->with('causer')
+            ->orderByDesc('id')
+            ->paginate(in_array($request->integer('per_page'), [10, 25, 50], true) ? $request->integer('per_page') : 10)
+            ->withQueryString();
+
+        return view('activity-log', ['logs' => $logs, 'events' => DB::table('lakmud_events')->orderByDesc('id')->get()]);
+    }
+
+    /**
+     * Halaman Kriteria & Bobot. Bobot bersifat global, jadi halaman ini tidak memakai
+     * pemilih kegiatan seperti halaman penilaian lainnya; yang ditampilkan hanya bobot
+     * aktif dan alasan penguncian bila ada.
+     */
+    public function criteria(Request $request)
+    {
+        return view('criteria', [
+            'bobot' => (new MooraWeights)->current(),
+            'terkunci' => (new MooraWeights)->lockReason(),
+        ]);
+    }
+
+    public function saveWeights(Request $request)
+    {
+        $data = $request->validate([
+            'weights' => ['required', 'array', 'size:'.MooraWeights::COUNT],
+            'weights.*' => ['required', 'numeric', 'min:0.0001', 'max:1'],
+        ]);
+
+        (new MooraWeights)->update($data['weights']);
+
+        return redirect('/kriteria')->with('success', 'Bobot kriteria disimpan. Perhitungan berikutnya memakai bobot ini.');
     }
 
     public function result(Request $request, int $event, string $action)

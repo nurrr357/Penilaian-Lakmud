@@ -19,6 +19,12 @@ Upload atau clone proyek ke direktori aplikasi, misalnya:
 
 Jangan unggah `.env` lokal, `node_modules`, log, cache, atau kredensial development.
 
+Untuk membuat arsip yang hanya berisi berkas production, gunakan `git archive`. Berkas yang ditandai `export-ignore` di `.gitattributes` tidak ikut: `tests/`, `docs/`, `scripts/`, `python_instruct/`, `phpunit.xml`, dan `resources/views/welcome.blade.php`.
+
+```bash
+git archive --format=tar.gz --output=lakmud-production.tar.gz HEAD
+```
+
 ## 2. Instal dependency PHP
 
 Jalankan dari root proyek:
@@ -67,6 +73,7 @@ Ketentuan penting:
 - Jangan memakai user database `root`.
 - `APP_URL` harus memakai domain final dan `https://`.
 - Isi `OPERATOR_EMAIL` dengan alamat asli dan `OPERATOR_PASSWORD` dengan kata sandi kuat sebelum seeding pertama, lalu hapus nilai `OPERATOR_PASSWORD` dari `.env` setelah seeding berhasil (lihat §4). Tanpa kata sandi, seeder sengaja berhenti di production; kata sandi acak tidak dipakai karena berarti tidak ada seorang pun yang bisa login.
+- Akun ketua opsional: isi `KETUA_EMAIL`, `KETUA_USERNAME`, dan `KETUA_PASSWORD` hanya jika diperlukan. Tidak ada akun admin dengan kata sandi default.
 - Jika server belum menggunakan HTTPS, jangan membuka aplikasi ke publik. Pasang TLS terlebih dahulu.
 
 ## 4. Database
@@ -84,7 +91,9 @@ php artisan config:clear
 php artisan db:seed --force
 ```
 
-Seeder membuat peran `operator_penilaian`, 21 izin panel, dan satu akun operator untuk `OPERATOR_EMAIL`. Kalau kata sandinya kosong, seeder berhenti dengan pesan yang menyebut nama variabelnya: akun berkata sandi acak tidak bisa dipakai login, jadi lebih baik gagal sekarang. Setelah seeding berhasil, hapus nilai `OPERATOR_PASSWORD` dari `.env`, lalu jalankan `php artisan config:clear`. Jangan memasukkan password ke repository, perintah shell, tiket, atau dokumentasi. `firstOrCreate` tidak mengubah password akun yang sudah ada; pada deployment pembaruan, pertahankan akun production yang sudah ada dan jangan mengandalkan seeder untuk mereset password.
+Sebelum seeding, periksa juga akun lama dengan username `admin` atau email `admin@example.test` dari seeder versi sebelumnya; hapus atau reset kata sandinya. Seeder baru tidak lagi membuat akun dengan kredensial default.
+
+Seeder membuat peran `operator_penilaian`, peran `ketua`, 23 izin panel (termasuk `criteria.view` dan `criteria.manage`), dan satu akun operator untuk `OPERATOR_EMAIL`. Kalau kata sandi operator kosong, seeder berhenti dengan pesan yang menyebut nama variabelnya: akun berkata sandi acak tidak bisa dipakai login, jadi lebih baik gagal sekarang. Akun ketua bersifat opsional: isi `KETUA_EMAIL` dan `KETUA_PASSWORD` sebelum seeding kalau ingin akun pemantau. Tidak ada akun admin dengan kata sandi default. Setelah seeding berhasil, hapus nilai `OPERATOR_PASSWORD` dan `KETUA_PASSWORD` dari `.env`, lalu jalankan `php artisan config:clear`. Jangan memasukkan password ke repository, perintah shell, tiket, atau dokumentasi. `firstOrCreate` tidak mengubah password akun yang sudah ada; pada deployment pembaruan, pertahankan akun production yang sudah ada dan jangan mengandalkan seeder untuk mereset password.
 
 ### 4.1 Data kegiatan nyata
 
@@ -198,8 +207,8 @@ Lakukan smoke test:
 1. `https://domain-anda.example/up` merespons sukses.
 2. Halaman login dapat dibuka melalui HTTPS.
 3. URL tanpa login mengarah ke `/login`.
-4. Login operator berhasil setelah password ditetapkan.
-5. Halaman dashboard, kegiatan, materi, peserta, input penilaian, perhitungan, dan hasil dapat dibuka sesuai permission.
+4. Login operator berhasil setelah password ditetapkan dan diarahkan ke `/dashboard`.
+5. Halaman dashboard, kegiatan, materi, peserta, input penilaian, perhitungan, hasil, dan Kriteria & Bobot dapat dibuka sesuai permission.
 6. Buat satu data uji, pastikan tersimpan, lalu hapus data uji tersebut.
 7. Periksa `storage/logs/laravel.log` dan log PHP-FPM/web server; tidak boleh ada error baru.
 

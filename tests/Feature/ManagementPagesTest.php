@@ -54,7 +54,7 @@ class ManagementPagesTest extends TestCase
         }
         $this->post('/input/'.$event.'/pretest', ['material_id' => $material, '_table' => ['page' => 2, 'per_page' => 10], 'rows' => [$ids[10] => ['pretest' => 19]]])->assertRedirect('/pretest?event_id='.$event.'&material_id='.$material.'&per_page=10&page=2');
         $this->assertDatabaseHas('assessment_scores', ['event_participant_id' => $ids[0], 'event_material_id' => $material, 'assessment_type' => 'pretest', 'score' => 18]);
-        $this->get('/?event_id='.$event.'&q=full+12&page=2')->assertViewHas('complete', true)->assertViewHas('listing', fn ($rows) => $rows->total() === 1);
+        $this->get('/dashboard?event_id='.$event.'&q=full+12&page=2')->assertViewHas('complete', true)->assertViewHas('listing', fn ($rows) => $rows->total() === 1);
         $this->post('/hasil/'.$event.'/calculate?q=full+12&page=2')->assertSessionHasNoErrors();
         $run = DB::table('moora_runs')->where('lakmud_event_id', $event)->latest('id')->first();
         $this->assertEquals(12, $run->alternative_count);
@@ -86,7 +86,42 @@ class ManagementPagesTest extends TestCase
         }
         $sidebar = $this->get('/kegiatan?event_id='.$event);
         $sidebar->assertSee('href="/materi?event_id='.$event.'"', false)->assertSee('href="/peserta?event_id='.$event.'"', false);
-        $this->post('/kegiatan/'.$event.'/materi', ['name' => 'TEST material', 'sequence' => 1, 'is_active' => 1])->assertRedirect('/materi?event_id='.$event);
-        $this->post('/kegiatan/'.$event.'/peserta', ['name' => 'TEST participant', 'sequence' => 1])->assertRedirect('/peserta?event_id='.$event);
+        $this->post('/kegiatan/'.$event.'/materi', ['name' => 'TEST material', 'is_active' => 1])->assertRedirect('/materi?event_id='.$event);
+        $this->post('/kegiatan/'.$event.'/peserta', ['name' => 'TEST participant'])->assertRedirect('/peserta?event_id='.$event);
+        $this->assertDatabaseHas('event_materials', ['lakmud_event_id' => $event, 'name' => 'TEST material', 'sequence' => 1]);
+        $this->assertDatabaseHas('event_participants', ['lakmud_event_id' => $event, 'sequence_number' => 1]);
+    }
+
+    public function test_nomor_urut_materi_dan_peserta_diisi_otomatis(): void
+    {
+        $this->seed();
+        $user = User::factory()->create()->assignRole('operator_penilaian');
+        $event = DB::table('lakmud_events')->insertGetId(['name' => 'TEST auto', 'organization' => 'TEST', 'venue' => 'TEST', 'start_date' => '2026-10-01', 'end_date' => '2026-10-02', 'created_at' => now(), 'updated_at' => now()]);
+        $this->actingAs($user);
+
+        // Materi: nomor mengisi slot kosong terkecil supaya label M1 sampai M15 tetap rapat.
+        foreach ([1, 2, 3] as $i) {
+            $this->post('/kegiatan/'.$event.'/materi', ['name' => 'Materi '.$i, 'is_active' => 1])->assertSessionHasNoErrors();
+        }
+        $this->assertSame([1, 2, 3], DB::table('event_materials')->where('lakmud_event_id', $event)->orderBy('sequence')->pluck('sequence')->map(fn ($n) => (int) $n)->all());
+        $this->delete('/kegiatan/'.$event.'/materi/'.DB::table('event_materials')->where('lakmud_event_id', $event)->where('sequence', 2)->value('id'))->assertSessionHasNoErrors();
+        $this->post('/kegiatan/'.$event.'/materi', ['name' => 'Materi pengganti', 'is_active' => 1])->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('event_materials', ['lakmud_event_id' => $event, 'name' => 'Materi pengganti', 'sequence' => 2]);
+
+        // Batas 15 materi tetap berlaku walau nomor tidak lagi diisi operator.
+        foreach (range(4, 15) as $i) {
+            $this->post('/kegiatan/'.$event.'/materi', ['name' => 'Materi '.$i, 'is_active' => 1])->assertSessionHasNoErrors();
+        }
+        $this->post('/kegiatan/'.$event.'/materi', ['name' => 'Materi ke-16', 'is_active' => 1])->assertSessionHasErrors('panel');
+        $this->assertSame(15, DB::table('event_materials')->where('lakmud_event_id', $event)->count());
+
+        // Peserta: nomor melanjutkan dari nomor terbesar, jadi tidak menabrak baris yang ada.
+        $this->post('/kegiatan/'.$event.'/peserta', ['name' => 'Peserta satu'])->assertSessionHasNoErrors();
+        $this->post('/kegiatan/'.$event.'/peserta', ['name' => 'Peserta dua'])->assertSessionHasNoErrors();
+        $this->post('/kegiatan/'.$event.'/peserta', ['name' => 'Peserta tiga'])->assertSessionHasNoErrors();
+        $this->delete('/kegiatan/'.$event.'/peserta/'.DB::table('event_participants')->where('lakmud_event_id', $event)->where('sequence_number', 2)->value('id'))->assertSessionHasNoErrors();
+        $this->post('/kegiatan/'.$event.'/peserta', ['name' => 'Peserta empat'])->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('event_participants', ['lakmud_event_id' => $event, 'sequence_number' => 4]);
+        $this->assertSame([1, 3, 4], DB::table('event_participants')->where('lakmud_event_id', $event)->orderBy('sequence_number')->pluck('sequence_number')->map(fn ($n) => (int) $n)->all());
     }
 }
