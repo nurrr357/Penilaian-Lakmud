@@ -20,12 +20,13 @@ class PanelTest extends TestCase
 
     public function test_authentication_and_permission_boundary(): void
     {
-        $this->get('/')->assertRedirect('/login');
-        $this->actingAs(User::factory()->create())->get('/')->assertForbidden();
+        $this->get('/dashboard')->assertRedirect('/login');
+        $this->actingAs(User::factory()->create())->get('/dashboard')->assertForbidden();
         $this->actingAs($this->operator());
-        foreach (['/', '/kegiatan', '/absensi', '/pretest', '/posttest', '/keaktifan', '/etika', '/pemahaman', '/perhitungan', '/hasil', '/panduan'] as $url) {
+        foreach (['/dashboard', '/kegiatan', '/absensi', '/pretest', '/posttest', '/keaktifan', '/etika', '/pemahaman', '/perhitungan', '/hasil', '/kriteria'] as $url) {
             $this->get($url)->assertOk();
         }
+        $this->get('/panduan')->assertNotFound();
     }
 
     public function test_crud_and_cross_event_input_isolation(): void
@@ -38,14 +39,15 @@ class PanelTest extends TestCase
         $other = DB::table('lakmud_events')->latest('id')->value('id');
         $this->post("/kegiatan/$id/materi", ['name' => 'Materi', 'sequence' => 1, 'is_active' => 1])->assertSessionHasNoErrors();
         $material = DB::table('event_materials')->where('lakmud_event_id', $id)->value('id');
-        $this->post("/kegiatan/$other/peserta", ['name' => 'Asing', 'sequence' => 1])->assertSessionHasNoErrors();
+        $this->post("/kegiatan/$other/peserta", ['name' => 'Asing'])->assertSessionHasNoErrors();
         $foreign = DB::table('event_participants')->where('lakmud_event_id', $other)->value('id');
         $this->post("/input/$id/pretest", ['material_id' => $material, 'rows' => [$foreign => ['pretest' => 18]]])->assertSessionHasErrors();
         $this->assertDatabaseMissing('assessment_scores', ['event_participant_id' => $foreign]);
         $this->put("/kegiatan/$other/materi/$material", ['name' => 'Tidak boleh', 'sequence' => 1, 'is_active' => 1])->assertNotFound();
-        $this->put("/kegiatan/$id/materi/$material", ['name' => 'Revisi materi', 'sequence' => 1, 'is_active' => 1])->assertSessionHasNoErrors();
+        $this->put("/kegiatan/$id/materi/$material", ['name' => 'Revisi materi', 'is_active' => 1])->assertSessionHasNoErrors();
         $this->get('/materi?event_id='.$id)->assertSee('Revisi materi');
-        $this->post("/kegiatan/$id/materi", ['name' => 'Duplikat', 'sequence' => 1, 'is_active' => 1])->assertSessionHasErrors();
+        $this->post("/kegiatan/$id/materi", ['name' => 'Materi kedua', 'is_active' => 1])->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('event_materials', ['lakmud_event_id' => $id, 'name' => 'Materi kedua', 'sequence' => 2]);
         $this->put("/kegiatan/$id", array_merge($payload, ['name' => 'Revisi kegiatan']))->assertSessionHasNoErrors();
         $this->delete("/kegiatan/$id/materi/$material")->assertSessionHasNoErrors();
         $this->assertDatabaseMissing('event_materials', ['id' => $material]);
@@ -54,12 +56,75 @@ class PanelTest extends TestCase
         $this->assertDatabaseMissing('lakmud_events', ['id' => $id]);
     }
 
+    public function test_perhitungan_page_is_paginated(): void
+    {
+        $this->actingAs($this->operator());
+        $this->post('/kegiatan', ['name' => 'Pagination', 'organization' => 'IPNU', 'venue' => 'Aula', 'start_date' => '2026-10-18', 'end_date' => '2026-10-19'])->assertSessionHasNoErrors();
+        $event = DB::table('lakmud_events')->where('name', 'Pagination')->first();
+        for ($i = 1; $i <= 15; $i++) {
+            $this->post("/kegiatan/{$event->id}/materi", ['name' => "Materi $i", 'sequence' => $i, 'is_active' => 1])->assertSessionHasNoErrors();
+        }
+        for ($i = 1; $i <= 11; $i++) {
+            $this->post("/kegiatan/{$event->id}/peserta", ['name' => "Peserta $i"])->assertSessionHasNoErrors();
+        }
+        $participantIds = DB::table('event_participants')->where('lakmud_event_id', $event->id)->pluck('id');
+        foreach (DB::table('event_materials')->where('lakmud_event_id', $event->id)->get() as $material) {
+            foreach (['pretest', 'posttest', 'keaktifan', 'etika', 'pemahaman', 'absensi'] as $kind) {
+                $rows = [];
+                foreach ($participantIds as $pid) {
+                    $rows[$pid] = match ($kind) {
+                        'absensi' => ['attendance' => 'present'], 'keaktifan' => ['activity' => '18'], 'etika' => ['ethics' => '18'], 'pemahaman' => ['understanding' => '18'], default => [$kind => '18']
+                    };
+                }
+                $this->post("/input/{$event->id}/$kind", ['material_id' => $material->id, 'rows' => $rows])->assertSessionHasNoErrors();
+            }
+        }
+        $this->post("/hasil/{$event->id}/calculate")->assertSessionHasNoErrors();
+
+        $this->get('/perhitungan?event_id='.$event->id.'&per_page=10')
+            ->assertOk()
+            ->assertSee('Halaman 1 dari 2')
+            ->assertSee('pagination__item', false);
+        $this->get('/perhitungan?event_id='.$event->id.'&per_page=50')
+            ->assertOk()
+            ->assertSee('Halaman 1 dari 1');
+    }
+
+    public function test_perhitungan_snapshot_rows_have_detail_buttons_and_template(): void
+    {
+        $this->actingAs($this->operator());
+        $this->post('/kegiatan', ['name' => 'Detail Modal', 'organization' => 'IPNU', 'venue' => 'Aula', 'start_date' => '2026-10-18', 'end_date' => '2026-10-19'])->assertSessionHasNoErrors();
+        $event = DB::table('lakmud_events')->where('name', 'Detail Modal')->first();
+        for ($i = 1; $i <= 15; $i++) {
+            $this->post("/kegiatan/{$event->id}/materi", ['name' => "Materi $i", 'sequence' => $i, 'is_active' => 1])->assertSessionHasNoErrors();
+        }
+        $this->post("/kegiatan/{$event->id}/peserta", ['name' => 'Peserta Uji'])->assertSessionHasNoErrors();
+        $participant = DB::table('event_participants')->where('lakmud_event_id', $event->id)->first();
+        foreach (DB::table('event_materials')->where('lakmud_event_id', $event->id)->get() as $material) {
+            foreach (['pretest', 'posttest', 'keaktifan', 'etika', 'pemahaman', 'absensi'] as $kind) {
+                $row = match ($kind) {
+                    'absensi' => ['attendance' => 'present'], 'keaktifan' => ['activity' => '18'], 'etika' => ['ethics' => '18'], 'pemahaman' => ['understanding' => '18'], default => [$kind => '18']
+                };
+                $this->post("/input/{$event->id}/$kind", ['material_id' => $material->id, 'rows' => [$participant->id => $row]])->assertSessionHasNoErrors();
+            }
+        }
+        $this->post("/hasil/{$event->id}/calculate")->assertSessionHasNoErrors();
+
+        $this->get('/perhitungan?event_id='.$event->id)
+            ->assertOk()
+            ->assertSee('data-modal-open="moora-detail-', false)
+            ->assertSee('id="moora-detail-', false)
+            ->assertSee('Lihat detail')
+            ->assertSee('id="hasil-detail-modal"', false)
+            ->assertSee('Substitusi angka per kriteria');
+    }
+
     public function test_complete_workflow_validation_snapshots_locks_and_stale(): void
     {
         $this->actingAs($this->operator());
         $this->post('/kegiatan', ['name' => 'Pengujian', 'organization' => 'IPNU', 'venue' => 'Aula', 'start_date' => '2026-10-18', 'end_date' => '2026-10-19'])->assertSessionHasNoErrors();
         $event = DB::table('lakmud_events')->where('name', 'Pengujian')->first();
-        $this->post("/kegiatan/{$event->id}/peserta", ['name' => 'Peserta Uji', 'sequence' => 1])->assertSessionHasNoErrors();
+        $this->post("/kegiatan/{$event->id}/peserta", ['name' => 'Peserta Uji'])->assertSessionHasNoErrors();
         $participant = DB::table('event_participants')->where('lakmud_event_id', $event->id)->first();
         for ($i = 1; $i <= 15; $i++) {
             $this->post("/kegiatan/{$event->id}/materi", ['name' => "Materi $i", 'sequence' => $i, 'is_active' => 1])->assertSessionHasNoErrors();
@@ -85,19 +150,18 @@ class PanelTest extends TestCase
         $this->assertSame('B', $result->certificate_predicate);
         $detail = $this->get('/perhitungan?event_id='.$event->id);
         $detail->assertOk()->assertSee('Peserta Uji')
-            ->assertSee('Detail Perhitungan MOORA')->assertSee('Cara Perangkingan')
-            ->assertSee('Snapshot Peserta')->assertSee('data-katex=', false)
-            ->assertSee('Bobot snapshot')->assertSee('Pembagi snapshot')
-            ->assertSee((string) json_decode($run->divisors, true)[1])
-            ->assertSee('C1-C6: '.implode(' | ', json_decode($result->criteria, true)))
-            ->assertSee('Normalisasi: '.implode(' | ', json_decode($result->normalized, true)))
-            ->assertSee('Terbobot: '.implode(' | ', json_decode($result->weighted, true)))
-            ->assertSee('Benefit: '.$result->benefit_total)
-            ->assertSee('Cost: '.$result->cost_total);
+            ->assertSee('Snapshot Peserta')
+            ->assertDontSee('Detail Perhitungan MOORA')
+            ->assertSee('Menampilkan ', false)
+            ->assertDontSee('C1-C6: ')
+            ->assertDontSee('Normalisasi: ')
+            ->assertDontSee('Terbobot: ')
+            ->assertSee('Lihat detail')
+            ->assertSee('data-modal-open="moora-detail-', false);
         $reader = User::factory()->create();
         $reader->givePermissionTo('results.view');
         $this->actingAs($reader)->get('/perhitungan?event_id='.$event->id)
-            ->assertOk()->assertSee('Detail Perhitungan MOORA')->assertSee('Peserta Uji')
+            ->assertOk()->assertSee('Snapshot Peserta')->assertSee('Peserta Uji')
             ->assertDontSee('Hitung MOORA')->assertDontSee('>Finalisasi<', false);
         $this->actingAs($reader)->get('/hasil?event_id='.$event->id)
             ->assertOk()->assertSee('Peringkat MOORA')->assertSee('Peserta Uji')

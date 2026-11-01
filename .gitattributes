@@ -9,3 +9,12 @@
 /.github export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore
+
+# Berkas pengembangan/QA yang tidak perlu masuk arsip production.
+/tests export-ignore
+/docs export-ignore
+/scripts export-ignore
+/python_instruct export-ignore
+/phpunit.xml export-ignore
+/.editorconfig export-ignore
+/resources/views/welcome.blade.php export-ignore

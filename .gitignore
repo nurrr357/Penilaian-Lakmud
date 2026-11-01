@@ -31,3 +31,14 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /.hermes
+
+# Artefak QA dan browser lokal
+/.playwright/
+/coverage/
+/playwright-report/
+/test-results/
+
+# Backup lokal dan arsip vendor
+composer.json.bak-*
+composer.lock.bak-*
+penilaianlakmud.mochhuda.id/vendor-*.tar.gz

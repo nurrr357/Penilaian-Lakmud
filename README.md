@@ -7,8 +7,10 @@ Aplikasi admin penilaian LAKMUD berbasis Laravel untuk mengelola kegiatan, mater
 - CRUD kegiatan, materi, dan peserta melalui tabel serta modal.
 - Halaman Absensi, Pretest, Posttest, Keaktifan, Etika, dan Pemahaman.
 - Pencarian dan pagination 10/25/50.
-- Detail perhitungan MOORA menggunakan KaTeX.
+- Perhitungan MOORA dengan bobot C1–C6 yang dapat diatur global di halaman Kriteria & Bobot.
 - Perangkingan Yi, finalisasi, penguncian, pembukaan kunci, dan audit log.
+
+Panel operator berada di `/dashboard`; `/` hanya mengalihkan ke `/login` untuk pengunjung yang belum masuk.
 
 ## Instalasi
 
@@ -29,7 +31,7 @@ npm run build
 php artisan serve
 ```
 
-Akun operator hasil seeder: `operator@example.test`, dengan kata sandi dari `DEMO_PASSWORD` (tidak disimpan dalam repository). Untuk produksi, seeder membaca `OPERATOR_EMAIL` dan `OPERATOR_PASSWORD`; langkah lengkapnya ada di `docs/deployment-production.md`.
+Akun operator hasil seeder: `operator@example.test`, dengan kata sandi dari `DEMO_PASSWORD` (tidak disimpan dalam repository). Akun ketua opsional dibuat hanya jika `KETUA_EMAIL` dan `KETUA_PASSWORD` diisi. Untuk produksi, seeder membaca `OPERATOR_EMAIL`, `OPERATOR_PASSWORD`, dan variabel `KETUA_*`; langkah lengkapnya ada di `docs/deployment-production.md`.
 
 ## Pengujian
 

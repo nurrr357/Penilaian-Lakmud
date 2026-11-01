@@ -1,2 +1,16 @@
+# robots.txt untuk Penilaian LAKMUD
+#
+# Aplikasi ini panel operator, bukan situs publik: tidak ada halaman yang ditujukan untuk
+# mesin pencari. '/' hanya mengalihkan ke /login, dan seluruh halaman panel dijaga
+# autentikasi serta izin pada route. Karena tidak ada konten publik, seluruh jalur ditutup
+# untuk perayap. Sitemap tidak lagi dideklarasikan karena /sitemap.xml sudah dihapus
+# bersama halaman publik.
+#
+# Panel tetap mengirim meta robots noindex. Pembatas akses sesungguhnya adalah autentikasi
+# dan izin pada route, bukan robots.txt.
 User-agent: *
-Disallow:
+
+Disallow: /
+
+# Endpoint kesehatan aplikasi bukan halaman berisi konten.
+Disallow: /up

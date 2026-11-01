@@ -6,10 +6,21 @@ use InvalidArgumentException;
 
 class MooraCalculator
 {
+    /**
+     * Bobot default C1 sampai C6. Nilai ini tetap menjadi acuan saat panel belum pernah
+     * menyimpan bobot global (lihat MooraWeights::current()).
+     */
     public const WEIGHTS = [0.10, 0.10, 0.20, 0.15, 0.20, 0.25];
 
-    public function calculate(array $matrix): array
+    /**
+     * @param  array<int, array<int, float|int>>  $matrix
+     * @param  array<int, float>  $weights  Bobot aktif C1 sampai C6, berjumlah 1.
+     */
+    public function calculate(array $matrix, array $weights = self::WEIGHTS): array
     {
+        if (count($weights) !== 6) {
+            throw new InvalidArgumentException('Bobot harus berisi tepat enam nilai C1–C6.');
+        }
         if ($matrix === []) {
             throw new InvalidArgumentException('Belum ada peserta untuk dihitung.');
         }
@@ -40,7 +51,7 @@ class MooraCalculator
             $weighted = [];
             foreach ($criteria as $index => $value) {
                 $normalized[] = $divisors[$index] == 0.0 ? 0.0 : (float) $value / $divisors[$index];
-                $weighted[] = $normalized[$index] * self::WEIGHTS[$index];
+                $weighted[] = $normalized[$index] * $weights[$index];
             }
             $benefit = array_sum(array_slice($weighted, 1));
             $rows[$participantId] = [

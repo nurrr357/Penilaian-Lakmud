@@ -26,7 +26,7 @@ class PanelService
             if ($action !== 'calculate') {
                 $this->stale($id);
             }
-            activity()->causedBy(auth()->user())->withProperties(['lakmud_event_id' => $id, 'payload' => request()->except(['_token', 'password'])])->log($action);
+            activity()->causedBy(auth()->user())->withProperties(['lakmud_event_id' => $id, 'payload' => request()->except(['_token', 'password', 'password_confirmation', 'current_password', 'remember_token'])])->log($action);
 
             return $result;
         });
@@ -121,9 +121,10 @@ class PanelService
                 $matrix[$participant->id] = $criteria;
                 $certificates[$participant->id] = (new CertificateScoreCalculator)->calculate($components);
             }
-            $calculated = (new MooraCalculator)->calculate($matrix);
+            $bobot = (new MooraWeights)->current();
+            $calculated = (new MooraCalculator)->calculate($matrix, $bobot);
             $this->stale($id);
-            $runId = DB::table('moora_runs')->insertGetId(['lakmud_event_id' => $id, 'status' => 'valid', 'formula_version' => 'moora-v1', 'weights' => json_encode(MooraCalculator::WEIGHTS), 'divisors' => json_encode($calculated['divisors']), 'alternative_count' => count($matrix), 'calculated_by' => auth()->id(), 'created_at' => now(), 'updated_at' => now()]);
+            $runId = DB::table('moora_runs')->insertGetId(['lakmud_event_id' => $id, 'status' => 'valid', 'formula_version' => 'moora-v1', 'weights' => json_encode($bobot), 'divisors' => json_encode($calculated['divisors']), 'alternative_count' => count($matrix), 'calculated_by' => auth()->id(), 'created_at' => now(), 'updated_at' => now()]);
             foreach ($data['participants'] as $participant) {
                 $row = $calculated['rows'][$participant->id];
                 $certificate = $certificates[$participant->id];

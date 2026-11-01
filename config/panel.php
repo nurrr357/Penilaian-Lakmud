@@ -17,4 +17,23 @@ return [
         'email' => env('OPERATOR_EMAIL', 'operator@example.test'),
         'password' => env('OPERATOR_PASSWORD') ?: env('DEMO_PASSWORD'),
     ],
+
+    /*
+     | Akun ketua opsional. Akun ini hanya dibuat kalau KETUA_EMAIL dan KETUA_PASSWORD
+     | diisi. Tidak ada kata sandi default: akun dengan kredensial yang diketahui publik
+     | tidak boleh masuk ke repository atau server produksi.
+     */
+    'ketua' => [
+        'name' => env('KETUA_NAME', 'Ketua Penilaian'),
+        'email' => env('KETUA_EMAIL'),
+        'username' => env('KETUA_USERNAME'),
+        'password' => env('KETUA_PASSWORD'),
+    ],
+
+    /*
+     | Saklar sementara untuk sidang: hasil MOORA (Perhitungan & Hasil Perangkingan)
+     | disembunyikan dari menu sampai sidang selesai, lalu ubah menjadi true.
+     | Backend tetap menjaga route dengan permission, saklar ini hanya menyembunyikan tampilan.
+     */
+    'show_results' => env('PANEL_SHOW_RESULTS', false),
 ];

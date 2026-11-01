@@ -123,6 +123,8 @@ a { color: var(--lakmud-primary); }
   padding: clamp(12px, 2vw, var(--app-page-gutter));
 }
 .app-content > .lak-card + .lak-card { margin-top: var(--app-section-gap); }
+/* Kartu grafik tepat di bawah grid metrik butuh jarak yang sama dengan kartu setelah kartu. */
+.app-content > .lak-metric-grid + .lak-card { margin-top: var(--app-section-gap); }
 
 @media print {
   .app-sidebar, .app-topbar, .app-backdrop, .page-header__actions { display: none !important; }
@@ -309,6 +311,10 @@ a.pagination__item:hover { background: var(--lakmud-surface-container-high); }
 .lak-form__grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); }
 .lak-form__row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .lak-form__actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
+/* Satu baris: keterangan di kiri, aksi di kanan, sejajar sumbu teks tabel. */
+.lak-form__actions--split { justify-content: space-between; align-items: center; gap: 12px 24px; }
+.lak-form__total { margin: 0; font-size: 14px; color: var(--lakmud-on-surface-variant); }
+.lak-form__total strong { color: var(--lakmud-on-surface); font-variant-numeric: tabular-nums; }
 
 .lak-form > *,
 .lak-form__grid > *,

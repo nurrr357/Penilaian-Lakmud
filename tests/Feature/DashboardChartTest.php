@@ -15,6 +15,7 @@ class DashboardChartTest extends TestCase
      *  ManagementPagesTest::test_paged_saves... supaya jalur hitungnya benar-benar terpakai). */
     private function kegiatanLengkap(): array
     {
+        config(['panel.show_results' => true]);
         $this->seed();
         $event = DB::table('lakmud_events')->insertGetId(['name' => 'TEST dashboard', 'organization' => 'TEST', 'venue' => 'TEST', 'start_date' => '2026-10-01', 'end_date' => '2026-10-02']);
         $peserta = [];
@@ -49,9 +50,11 @@ class DashboardChartTest extends TestCase
         $this->actingAs($this->operator());
         $this->post('/hasil/'.$event.'/calculate')->assertSessionHasNoErrors();
 
-        $this->get('/?event_id='.$event)
+        $this->get('/dashboard?event_id='.$event)
             ->assertOk()
             ->assertSee('data-chart', false)
+            ->assertSee('Lulus dan tidak lulus')
+            ->assertDontSee('Buka perhitungan')
             ->assertViewHas('dashboard', fn (array $d) => $d['participants'] === 2
                 && $d['materials'] === 15
                 && $d['materials_active'] === 15
@@ -71,7 +74,7 @@ class DashboardChartTest extends TestCase
         [$event] = $this->kegiatanLengkap();
         $this->actingAs($this->operator());
 
-        $this->get('/?event_id='.$event)
+        $this->get('/dashboard?event_id='.$event)
             ->assertOk()
             ->assertSee('Grafik belum tersedia')
             ->assertDontSee('data-chart', false)
@@ -82,12 +85,14 @@ class DashboardChartTest extends TestCase
     {
         $this->actingAs($this->operator());
 
-        $this->get('/')
+        $this->get('/dashboard')
             ->assertOk()
             ->assertDontSee('Lihat input kosong')
             ->assertDontSee('Yang perlu diisi')
             ->assertDontSee('Cari nama')
             ->assertDontSee('name="per_page"', false)
+            ->assertDontSee('class="pagination"', false)
+            ->assertDontSee('Menampilkan ', false)
             ->assertDontSee('dashboard-detail-modal');
     }
 
@@ -98,14 +103,14 @@ class DashboardChartTest extends TestCase
         $this->actingAs($this->operator());
 
         // Tanpa event_id: kegiatan terbaru dipakai, dan pemilihnya tetap dirender.
-        $this->get('/')
+        $this->get('/dashboard')
             ->assertOk()
             ->assertSee('name="event_id"', false)
             ->assertViewHas('event', fn ($e) => $e->id === $baru)
             ->assertViewHas('dashboard', fn (array $d) => $d['materials'] === 0 && $d['results'] === 0);
 
         // Dengan event_id: kartu dan grafik mengikuti kegiatan yang dipilih.
-        $this->get('/?event_id='.$lama)
+        $this->get('/dashboard?event_id='.$lama)
             ->assertOk()
             ->assertViewHas('event', fn ($e) => $e->id === $lama)
             ->assertViewHas('dashboard', fn (array $d) => $d['materials'] === 15 && $d['participants'] === 2);
