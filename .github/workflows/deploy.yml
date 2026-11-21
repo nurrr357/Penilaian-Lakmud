@@ -94,7 +94,14 @@ jobs:
             --exclude='./bootstrap/cache' \
             --exclude='./database/database.sqlite' \
             -czf "$RUNNER_TEMP/lakmud-release.tar.gz" .
-          tar -tzf "$RUNNER_TEMP/lakmud-release.tar.gz" | head -5
+          tar -tzf "$RUNNER_TEMP/lakmud-release.tar.gz" >/dev/null
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lakmud-release
+          path: ${{ runner.temp }}/lakmud-release.tar.gz
+          if-no-files-found: error
 
   deploy:
     name: Deploy production
@@ -106,6 +113,12 @@ jobs:
       name: production
       url: https://lakmud.mochhuda.id/
     steps:
+      - name: Download release artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: lakmud-release
+          path: ${{ runner.temp }}
+
       - name: Configure SSH
         env:
           LAKMUD_SSH_KEY: ${{ secrets.LAKMUD_SSH_KEY }}
