@@ -31,9 +31,10 @@ return [
     ],
 
     /*
-     | Saklar sementara untuk sidang: hasil MOORA (Perhitungan & Hasil Perangkingan)
-     | disembunyikan dari menu sampai sidang selesai, lalu ubah menjadi true.
-     | Backend tetap menjaga route dengan permission, saklar ini hanya menyembunyikan tampilan.
+     | Saklar tampilan hasil MOORA (Perhitungan & Hasil Perangkingan). Default tampil.
+     | Set PANEL_SHOW_RESULTS=false untuk menyembunyikan menu sementara, misalnya
+     | selama sidang. Backend tetap menjaga route dengan permission; saklar ini hanya
+     | menyembunyikan tampilan.
      */
-    'show_results' => env('PANEL_SHOW_RESULTS', false),
+    'show_results' => env('PANEL_SHOW_RESULTS', true),
 ];
