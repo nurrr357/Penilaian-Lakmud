@@ -1,0 +1,149 @@
+name: CI/CD lakmud
+
+on:
+  push:
+    branches: [production]
+    paths-ignore:
+      - ".github/**"
+      - "README.md"
+  pull_request:
+    branches: [production]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lakmud-production
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+          MYSQL_DATABASE: db_lakmud_penilaian_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, pdo_mysql, dom, xml, curl, zip, intl, bcmath
+          coverage: none
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Build assets
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+
+      - name: Run migrations on test database
+        env:
+          APP_ENV: testing
+          APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: db_lakmud_penilaian_test
+          DB_USERNAME: root
+          DB_PASSWORD: ""
+          CACHE_STORE: array
+          SESSION_DRIVER: array
+          QUEUE_CONNECTION: sync
+        run: php artisan migrate --force
+
+      - name: Run tests
+        run: php artisan test --compact
+
+      - name: Install production PHP dependencies
+        run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Build release archive
+        run: |
+          tar \
+            --exclude='./.git' \
+            --exclude='./.env' \
+            --exclude='./.env.*' \
+            --exclude='./node_modules' \
+            --exclude='./storage' \
+            --exclude='./tests' \
+            --exclude='./.github' \
+            --exclude='./bootstrap/cache' \
+            --exclude='./database/database.sqlite' \
+            -czf "$RUNNER_TEMP/lakmud-release.tar.gz" .
+          tar -tzf "$RUNNER_TEMP/lakmud-release.tar.gz" | head -5
+
+  deploy:
+    name: Deploy production
+    needs: test
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/production'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: https://lakmud.mochhuda.id/
+    steps:
+      - name: Configure SSH
+        env:
+          LAKMUD_SSH_KEY: ${{ secrets.LAKMUD_SSH_KEY }}
+          LAKMUD_SSH_KNOWN_HOSTS: ${{ secrets.LAKMUD_SSH_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$LAKMUD_SSH_KEY" > ~/.ssh/lakmud
+          printf '%s\n' "$LAKMUD_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/lakmud ~/.ssh/known_hosts
+
+      - name: Deploy over SSH
+        env:
+          LAKMUD_DEPLOY_HMAC: ${{ secrets.LAKMUD_DEPLOY_HMAC }}
+          LAKMUD_SSH_HOST: ${{ secrets.LAKMUD_SSH_HOST }}
+          LAKMUD_SSH_USER: ${{ secrets.LAKMUD_SSH_USER }}
+        run: |
+          HASH="$(sha256sum "$RUNNER_TEMP/lakmud-release.tar.gz" | awk '{print $1}')"
+          SIG="$(openssl dgst -sha256 -hmac "$LAKMUD_DEPLOY_HMAC" -binary "$RUNNER_TEMP/lakmud-release.tar.gz" | xxd -p -c 256)"
+          ssh -i ~/.ssh/lakmud \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -o ServerAliveInterval=15 \
+            -o ConnectTimeout=15 \
+            "$LAKMUD_SSH_USER@$LAKMUD_SSH_HOST" \
+            "deploy $GITHUB_SHA $HASH $SIG" \
+            < "$RUNNER_TEMP/lakmud-release.tar.gz"
+
+      - name: Verify public endpoint
+        env:
+          LAKMUD_HEALTH_URL: ${{ secrets.LAKMUD_HEALTH_URL }}
+        run: |
+          for i in $(seq 1 10); do
+            if curl -fsS --max-time 10 "$LAKMUD_HEALTH_URL" >/dev/null; then
+              echo "OK: $LAKMUD_HEALTH_URL"
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "Health check gagal: $LAKMUD_HEALTH_URL" >&2
+          exit 1
