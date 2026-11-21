@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -13,6 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(replace: [
+            \Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class => PreventRequestForgery::class,
+        ]);
         $middleware->alias(['permission' => PermissionMiddleware::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
