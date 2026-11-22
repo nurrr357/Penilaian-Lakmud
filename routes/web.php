@@ -11,6 +11,10 @@ use Illuminate\Validation\ValidationException;
 // masuk dikirim ke dashboard. Panel tetap dijaga autentikasi dan izin di grup route bawah.
 Route::get('/', fn () => redirect()->route(auth()->check() ? 'dashboard' : 'login'))->name('home');
 
+// Test suite menembak banyak request berurutan; produksi tetap memakai batas nyata.
+$authThrottle = config('app.env') === 'testing' ? '1000,1' : '300,1';
+$writeThrottle = config('app.env') === 'testing' ? '1000,1' : '120,1';
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', fn () => view('login'))->name('login');
     Route::post('/login', function (Request $request) {
@@ -43,7 +47,7 @@ Route::post('/logout', function (Request $request) {
 
     return redirect('/login');
 })->middleware('auth');
-Route::middleware(['auth', 'throttle:300,1'])->group(function () {
+Route::middleware(['auth', 'throttle:'.$authThrottle])->group(function () {
     Route::get('/dashboard', [PanelController::class, 'page'])
         ->defaults('page', 'dashboard')
         ->middleware('permission:'.PanelPermissions::PAGES['dashboard'])
@@ -54,7 +58,7 @@ Route::middleware(['auth', 'throttle:300,1'])->group(function () {
     }
     Route::get('/kriteria', [PanelController::class, 'criteria'])->middleware('permission:'.PanelPermissions::WEIGHTS_VIEW);
 
-    Route::middleware('throttle:120,1')->group(function () {
+    Route::middleware('throttle:'.$writeThrottle)->group(function () {
         Route::post('/kriteria', [PanelController::class, 'saveWeights'])->middleware('permission:'.PanelPermissions::WEIGHTS_MANAGE);
         Route::post('/kegiatan', [PanelController::class, 'event'])->middleware('permission:events.manage');
         Route::match(['put', 'delete'], '/kegiatan/{event}', [PanelController::class, 'event'])->whereNumber('event')->middleware('permission:events.manage');
