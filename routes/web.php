@@ -43,7 +43,7 @@ Route::post('/logout', function (Request $request) {
 
     return redirect('/login');
 })->middleware('auth');
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'throttle:120,1'])->group(function () {
     Route::get('/dashboard', [PanelController::class, 'page'])
         ->defaults('page', 'dashboard')
         ->middleware('permission:'.PanelPermissions::PAGES['dashboard'])
@@ -53,11 +53,14 @@ Route::middleware('auth')->group(function () {
         Route::get($url, [PanelController::class, 'page'])->defaults('page', $page)->middleware('permission:'.PanelPermissions::PAGES[$page]);
     }
     Route::get('/kriteria', [PanelController::class, 'criteria'])->middleware('permission:'.PanelPermissions::WEIGHTS_VIEW);
-    Route::post('/kriteria', [PanelController::class, 'saveWeights'])->middleware('permission:'.PanelPermissions::WEIGHTS_MANAGE);
-    Route::post('/kegiatan', [PanelController::class, 'event'])->middleware('permission:events.manage');
-    Route::match(['put', 'delete'], '/kegiatan/{event}', [PanelController::class, 'event'])->whereNumber('event')->middleware('permission:events.manage');
-    Route::post('/kegiatan/{event}/{type}', [PanelController::class, 'child'])->whereNumber('event')->whereIn('type', ['materi', 'peserta']);
-    Route::match(['put', 'delete'], '/kegiatan/{event}/{type}/{record}', [PanelController::class, 'child'])->whereNumber(['event', 'record'])->whereIn('type', ['materi', 'peserta']);
-    Route::post('/input/{event}/{kind}', [PanelController::class, 'input'])->whereNumber('event')->whereIn('kind', ['absensi', 'pretest', 'posttest', 'keaktifan', 'etika', 'pemahaman']);
-    Route::post('/hasil/{event}/{action}', [PanelController::class, 'result'])->whereNumber('event')->whereIn('action', ['calculate', 'finalize', 'unlock']);
+
+    Route::middleware('throttle:30,1')->group(function () {
+        Route::post('/kriteria', [PanelController::class, 'saveWeights'])->middleware('permission:'.PanelPermissions::WEIGHTS_MANAGE);
+        Route::post('/kegiatan', [PanelController::class, 'event'])->middleware('permission:events.manage');
+        Route::match(['put', 'delete'], '/kegiatan/{event}', [PanelController::class, 'event'])->whereNumber('event')->middleware('permission:events.manage');
+        Route::post('/kegiatan/{event}/{type}', [PanelController::class, 'child'])->whereNumber('event')->whereIn('type', ['materi', 'peserta']);
+        Route::match(['put', 'delete'], '/kegiatan/{event}/{type}/{record}', [PanelController::class, 'child'])->whereNumber(['event', 'record'])->whereIn('type', ['materi', 'peserta']);
+        Route::post('/input/{event}/{kind}', [PanelController::class, 'input'])->whereNumber('event')->whereIn('kind', ['absensi', 'pretest', 'posttest', 'keaktifan', 'etika', 'pemahaman']);
+        Route::post('/hasil/{event}/{action}', [PanelController::class, 'result'])->whereNumber('event')->whereIn('action', ['calculate', 'finalize', 'unlock']);
+    });
 });
