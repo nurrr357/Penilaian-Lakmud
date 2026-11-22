@@ -47,7 +47,7 @@ Route::post('/logout', function (Request $request) {
 
     return redirect('/login');
 })->middleware('auth');
-Route::middleware(['auth', 'throttle:'.$authThrottle])->group(function () {
+Route::middleware(['auth', 'throttle:'.$authThrottle])->group(function () use ($writeThrottle) {
     Route::get('/dashboard', [PanelController::class, 'page'])
         ->defaults('page', 'dashboard')
         ->middleware('permission:'.PanelPermissions::PAGES['dashboard'])
