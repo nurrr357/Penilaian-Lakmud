@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MooraExportController;
 use App\Http\Controllers\PanelController;
 use App\Services\PanelPermissions;
 use Illuminate\Http\Request;
@@ -57,7 +58,6 @@ Route::middleware(['auth', 'throttle:'.$authThrottle])->group(function () use ($
         Route::get($url, [PanelController::class, 'page'])->defaults('page', $page)->middleware('permission:'.PanelPermissions::PAGES[$page]);
     }
     Route::get('/kriteria', [PanelController::class, 'criteria'])->middleware('permission:'.PanelPermissions::WEIGHTS_VIEW);
-
     Route::middleware('throttle:'.$writeThrottle)->group(function () {
         Route::post('/kriteria', [PanelController::class, 'saveWeights'])->middleware('permission:'.PanelPermissions::WEIGHTS_MANAGE);
         Route::post('/kegiatan', [PanelController::class, 'event'])->middleware('permission:events.manage');
@@ -67,4 +67,6 @@ Route::middleware(['auth', 'throttle:'.$authThrottle])->group(function () use ($
         Route::post('/input/{event}/{kind}', [PanelController::class, 'input'])->whereNumber('event')->whereIn('kind', ['absensi', 'pretest', 'posttest', 'keaktifan', 'etika', 'pemahaman']);
         Route::post('/hasil/{event}/{action}', [PanelController::class, 'result'])->whereNumber('event')->whereIn('action', ['calculate', 'finalize', 'unlock']);
     });
+
+    Route::get('/hasil/{event}/export', MooraExportController::class)->whereNumber('event')->middleware('permission:results.view')->name('results.export');
 });
