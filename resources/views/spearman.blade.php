@@ -107,7 +107,7 @@
 <h3>Sumber data</h3>
 <ul>
 @foreach($data['sources'] as $source)
-<li>{{ $source['workbook'] }} ({{ $source['sheet'] }}): {{ $source['description'] }}. Jumlah {{ $source['count'] }}.</li>
+<li style="overflow-wrap:anywhere">{{ $source['workbook'] }} ({{ $source['sheet'] }}): {{ $source['description'] }}. Jumlah {{ $source['count'] }}.</li>
 @endforeach
 </ul>
 </section>
@@ -118,15 +118,18 @@
 <div class="table-wrap" tabindex="0" role="region" aria-label="Jumlah pencocokan data per metode">
 <table class="lak-table">
 <caption class="visually-hidden">Jumlah baris yang cocok per metode pencocokan</caption>
-<thead><tr><th scope="col">Metode</th><th scope="col">Jumlah</th><th scope="col">Keterangan</th></tr></thead>
+<thead><tr><th scope="col">No</th><th scope="col">Metode</th><th scope="col">Jumlah</th><th scope="col">Keterangan</th></tr></thead>
 <tbody>
-@foreach($data['match_audit'] as $audit)
+@forelse($data['match_audit'] as $audit)
 <tr>
+<td>{{ $loop->iteration }}</td>
 <th scope="row">{{ $audit['method'] }}</th>
 <td>{{ number_format((int) $audit['count'], 0, ',', '.') }}</td>
 <td>{{ $audit['description'] ?? '-' }}</td>
 </tr>
-@endforeach
+@empty
+<tr><td colspan="4">Tidak ada data audit pencocokan.</td></tr>
+@endforelse
 </tbody>
 </table>
 </div>
@@ -134,18 +137,19 @@
 <p class="subtitle">{{ count($data['repeated_matches']) }} pasangan nama yang sama dibedakan lewat nomor sertifikat atau nomor HP.</p>
 <div class="table-wrap" tabindex="0" role="region" aria-label="Nama berulang dan nomor pembeda">
 <table class="lak-table">
-<caption class="visually-hidden">Nama berulang dengan nomor LAKMUD, nomor HP, nomor MOORA, dan metode pencocokan</caption>
-<thead><tr><th scope="col">No LAKMUD</th><th scope="col">Nama</th><th scope="col">No HP</th><th scope="col">No MOORA</th><th scope="col">Metode</th></tr></thead>
+<caption class="visually-hidden">Nama berulang dengan nomor LAKMUD, nomor MOORA, dan metode pencocokan</caption>
+<thead><tr><th scope="col">No LAKMUD</th><th scope="col">Nama</th><th scope="col">No MOORA</th><th scope="col">Metode</th></tr></thead>
 <tbody>
-@foreach($data['repeated_matches'] as $match)
+@forelse($data['repeated_matches'] as $match)
 <tr>
 <td>{{ number_format((int) $match['no_lakmud'], 0, ',', '.') }}</td>
 <th scope="row">{{ $match['name'] }}</th>
-<td>{{ $match['phone'] }}</td>
 <td>{{ number_format((int) $match['no_moora'], 0, ',', '.') }}</td>
 <td>{{ $match['method'] }}</td>
 </tr>
-@endforeach
+@empty
+<tr><td colspan="4">Tidak ada nama berulang.</td></tr>
+@endforelse
 </tbody>
 </table>
 </div>

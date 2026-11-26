@@ -44,6 +44,10 @@ class SpearmanPageTest extends TestCase
             ->assertSee('spearman-histogram.png', false)
             ->assertSee('77,666667')
             ->assertSee('0,03278270')
+            ->assertSee('<th scope="col">No</th><th scope="col">Metode</th><th scope="col">Jumlah</th><th scope="col">Keterangan</th>', false)
+            ->assertSee('<th scope="col">No LAKMUD</th><th scope="col">Nama</th><th scope="col">No MOORA</th><th scope="col">Metode</th>', false)
+            ->assertDontSee('No HP')
+            ->assertDontSee('85730047715')
             ->assertViewHas('listing', fn ($rows) => count($rows) === 10 && $rows->total() === 702)
             ->assertViewHas('event', fn ($event) => $event === null);
     }
@@ -55,6 +59,12 @@ class SpearmanPageTest extends TestCase
         $this->get('/evaluasi-spearman?q='.urlencode("A'IMATUL"))
             ->assertOk()
             ->assertSee("A'IMATUL MUKHOFININGTIAS")
+            ->assertDontSee('ZUMROTUL')
+            ->assertViewHas('listing', fn ($rows) => count($rows) === 1 && $rows->total() === 1);
+
+        $this->get('/evaluasi-spearman?q='.urlencode('853/LAKMUD/35.07/74.55/III/2023'))
+            ->assertOk()
+            ->assertSee('ADE CINTA OKTAVIANI')
             ->assertDontSee('ZUMROTUL')
             ->assertViewHas('listing', fn ($rows) => count($rows) === 1 && $rows->total() === 1);
 
