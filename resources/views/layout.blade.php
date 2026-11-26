@@ -23,6 +23,7 @@
 @if(config('panel.show_results'))
 @can('results.view')<section class="app-nav-group" aria-labelledby="hasil-heading"><h2 class="app-nav-group__title" id="hasil-heading">HASIL</h2>
 @foreach(['perhitungan'=>'Perhitungan','hasil'=>'Hasil Perangkingan'] as $path=>$label)<a class="app-nav-link {{ request()->is($path) ? 'is-active' : '' }}" @if(request()->is($path)) aria-current="page" @endif href="/{{ $path }}{{ isset($event) && $event ? '?event_id='.$event->id : '' }}"><md-icon aria-hidden="true">{{ $path === 'perhitungan' ? 'calculate' : 'leaderboard' }}</md-icon><span class="label">{{ $label }}</span></a>@endforeach
+<a class="app-nav-link {{ request()->is('evaluasi-spearman') ? 'is-active' : '' }}" @if(request()->is('evaluasi-spearman')) aria-current="page" @endif href="/evaluasi-spearman"><md-icon aria-hidden="true">query_stats</md-icon><span class="label">Evaluasi Spearman</span></a>
 </section>
 @endcan
 @endif

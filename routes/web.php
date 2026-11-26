@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\MooraExportController;
 use App\Http\Controllers\PanelController;
+use App\Http\Controllers\SpearmanEvaluationController;
 use App\Services\PanelPermissions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -57,6 +58,7 @@ Route::middleware(['auth', 'throttle:'.$authThrottle])->group(function () use ($
     foreach (['/kegiatan' => 'kegiatan', '/materi' => 'materi', '/peserta' => 'peserta', '/absensi' => 'absensi', '/pretest' => 'pretest', '/posttest' => 'posttest', '/keaktifan' => 'keaktifan', '/etika' => 'etika', '/pemahaman' => 'pemahaman', '/perhitungan' => 'perhitungan', '/hasil' => 'hasil'] as $url => $page) {
         Route::get($url, [PanelController::class, 'page'])->defaults('page', $page)->middleware('permission:'.PanelPermissions::PAGES[$page]);
     }
+    Route::get('/evaluasi-spearman', SpearmanEvaluationController::class)->middleware('permission:results.view')->name('spearman.index');
     Route::get('/kriteria', [PanelController::class, 'criteria'])->middleware('permission:'.PanelPermissions::WEIGHTS_VIEW);
     Route::middleware('throttle:'.$writeThrottle)->group(function () {
         Route::post('/kriteria', [PanelController::class, 'saveWeights'])->middleware('permission:'.PanelPermissions::WEIGHTS_MANAGE);
