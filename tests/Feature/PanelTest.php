@@ -116,7 +116,13 @@ class PanelTest extends TestCase
             ->assertSee('id="moora-detail-', false)
             ->assertSee('Lihat detail')
             ->assertSee('id="hasil-detail-modal"', false)
-            ->assertSee('Substitusi angka per kriteria');
+            ->assertSee('Substitusi Nilai')
+            ->assertSee('data-katex="x_{ij}"', false)
+            ->assertSee('data-katex="D_j"', false)
+            ->assertSee('data-katex="x_{ij}^{*}"', false)
+            ->assertSee('data-katex="v_{ij}"', false)
+            ->assertSee('data-katex="Y_i^{+}"', false)
+            ->assertSee('data-katex="Y_i^{-}"', false);
     }
 
     public function test_complete_workflow_validation_snapshots_locks_and_stale(): void

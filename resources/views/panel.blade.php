@@ -2,17 +2,15 @@
 @section('content')
 @php
     $titles = ['dashboard'=>'Dashboard penilaian','kegiatan'=>'Data kegiatan','materi'=>'Data materi','peserta'=>'Data peserta','absensi'=>'Absensi','pretest'=>'Pretest','posttest'=>'Posttest','keaktifan'=>'Keaktifan','etika'=>'Etika','pemahaman'=>'Pemahaman','perhitungan'=>'Perhitungan MOORA','hasil'=>'Hasil Perangkingan'];
-    // Satu sumber rumus: halaman Perhitungan dan modal hasil memakai daftar yang sama.
-    $rumusMoora = [
-        ['C_{i1}=\\sum_{m=1}^{15} [\\text{absen}_{im}]', 'C1 sama dengan jumlah ketidakhadiran peserta pada 15 materi.'],
-        ['C_{ij}=\\sum_{m=1}^{15} x_{imj},\\quad j=2,\\ldots,6', 'C2 sampai C6 sama dengan jumlah nilai peserta pada 15 materi.'],
-        ['D_j=\\sqrt{\\sum_i C_{ij}^2}', 'Pembagi kriteria adalah akar jumlah kuadrat nilai seluruh peserta.'],
-        ['N_{ij}=\\frac{C_{ij}}{D_j}', 'Nilai normalisasi adalah nilai kriteria dibagi pembagi kriteria.'],
-        ['V_{ij}=N_{ij}\\,w_j', 'Nilai terbobot adalah nilai normalisasi dikali bobot kriteria.'],
-        ['Y_i=\\sum_{j=2}^{6}V_{ij}-V_{i1}', 'Yi adalah jumlah manfaat C2 sampai C6 dikurangi biaya C1.'],
+    // Rumus mengikuti Bab II laporan: x_ij, D_j, x*_ij, v_ij, Y_i+, Y_i-, dan Y_i.
+    $rumusHasil = [
+        ['D_j=\\sqrt{\\sum_{i=1}^{m}x_{ij}^{2}}', 'Penyebut normalisasi setiap kriteria (Persamaan 2.3).'],
+        ['x_{ij}^{*}=\\frac{x_{ij}}{D_j}', 'Nilai normalisasi alternatif ke-i pada kriteria ke-j (Persamaan 2.4).'],
+        ['v_{ij}=w_j\\,x_{ij}^{*}', 'Nilai terbobot alternatif ke-i pada kriteria ke-j (Persamaan 2.5).'],
+        ['Y_i^{+}=\\sum_{j=2}^{6}w_j\\,x_{ij}^{*}', 'Total nilai terbobot kriteria benefit C2–C6 (Persamaan 2.9).'],
+        ['Y_i^{-}=w_1\\,x_{i1}^{*}', 'Total nilai terbobot kriteria cost C1 (Persamaan 2.10).'],
+        ['Y_i=Y_i^{+}-Y_i^{-}', 'Nilai optimasi akhir alternatif ke-i (Persamaan 2.11).'],
     ];
-    // Urutan di modal hasil: hasil akhir dulu, lalu langkah yang mendahuluinya.
-    $rumusHasil = [$rumusMoora[5], $rumusMoora[4], $rumusMoora[3]];
 @endphp
 <div class="page-header"><div><h1>{{ $titles[$page] }}</h1>@if($event)<p class="subtitle">{{ $event->name }} · {{ $event->organization }}</p>@endif</div></div>
 @if(session('success'))<div class="lak-alert lak-alert--success" role="status">{{ session('success') }}</div>@endif

@@ -105,6 +105,13 @@ class MooraExportTest extends TestCase
         $this->assertSame(['Hasil Perangkingan', 'Detail Perhitungan'], $workbook->getSheetNames());
         $this->assertSame(1, $workbook->getSheet(0)->getCell('A11')->getValue());
         $this->assertSame('Peserta Export', $workbook->getSheet(0)->getCell('B11')->getValue());
+        $this->assertSame('Y_i', $workbook->getSheet(0)->getCell('C10')->getValue());
+        $this->assertSame('x_ij (C1)', $workbook->getSheet(1)->getCell('C6')->getValue());
+        $this->assertSame('x*_ij (C1)', $workbook->getSheet(1)->getCell('I6')->getValue());
+        $this->assertSame('v_ij (C1)', $workbook->getSheet(1)->getCell('O6')->getValue());
+        $this->assertSame('Y_i^+', $workbook->getSheet(1)->getCell('U6')->getValue());
+        $this->assertSame('Y_i^-', $workbook->getSheet(1)->getCell('V6')->getValue());
+        $this->assertSame('Y_i', $workbook->getSheet(1)->getCell('W6')->getValue());
         $this->assertSame('Peserta Export', $workbook->getSheet(1)->getCell('B7')->getValue());
         $this->assertSame(0.66, $workbook->getSheet(1)->getCell('W7')->getValue());
         $workbook->disconnectWorksheets();

@@ -13,6 +13,10 @@ class MooraCalculatorTest extends TestCase
         $this->assertEqualsWithDelta(0.4024922359, $result['rows'][1]['yi'], 1e-8);
         $this->assertEqualsWithDelta(0.7049844719, $result['rows'][2]['yi'], 1e-8);
         $this->assertSame(1, $result['rows'][2]['rank']);
+        $row = $result['rows'][2];
+        $this->assertEqualsWithDelta(array_sum(array_slice($row['weighted'], 1)), $row['benefit_total'], 1e-12);
+        $this->assertEqualsWithDelta($row['weighted'][0], $row['cost_total'], 1e-12);
+        $this->assertEqualsWithDelta($row['benefit_total'] - $row['cost_total'], $row['yi'], 1e-12);
         $ties = (new MooraCalculator)->calculate([1 => [0, 300, 300, 300, 300, 300], 2 => [0, 300, 300, 300, 300, 300], 3 => [0, 150, 150, 150, 150, 150]]);
         $this->assertSame([1, 1, 3], array_column($ties['rows'], 'rank'));
         $this->assertSame(0.0, $ties['divisors'][0]);

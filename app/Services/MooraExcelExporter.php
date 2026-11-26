@@ -90,9 +90,9 @@ class MooraExcelExporter
         $this->detail($sheet, 5, 'Tanggal', $this->date($event->start_date).' s.d. '.$this->date($event->end_date), 'F');
         $this->detail($sheet, 6, 'Run', '#'.$run->id.' · '.$run->formula_version.' · '.$run->status, 'F');
         $this->detail($sheet, 7, 'Dihitung', $this->dateTime($run->created_at), 'F');
-        $this->detail($sheet, 8, 'Bobot C1-C6', $this->weights($weights), 'F');
+        $this->detail($sheet, 8, 'Bobot w_j (C1-C6)', $this->weights($weights), 'F');
 
-        $headers = ['Ranking', 'Peserta', 'Yi', 'Nilai Sertifikat', 'Predikat', 'Status'];
+        $headers = ['Ranking', 'Peserta', 'Y_i', 'Nilai Sertifikat', 'Predikat', 'Status'];
         foreach ($headers as $index => $header) {
             $sheet->setCellValue(Coordinate::stringFromColumnIndex($index + 1).'10', $header);
         }
@@ -132,19 +132,19 @@ class MooraExcelExporter
 
         $this->detail($sheet, 2, 'Kegiatan', $event->name, 'Z');
         $this->detail($sheet, 3, 'Run', '#'.$run->id.' · '.$run->formula_version.' · '.$run->status, 'Z');
-        $this->detail($sheet, 4, 'Pembagi D1-D6', $this->divisors($divisors), 'Z');
+        $this->detail($sheet, 4, 'Pembagi D_j (C1-C6)', $this->divisors($divisors), 'Z');
 
         $headers = ['Ranking', 'Peserta'];
         foreach (range(1, 6) as $index) {
-            $headers[] = 'C'.$index;
+            $headers[] = 'x_ij (C'.$index.')';
         }
         foreach (range(1, 6) as $index) {
-            $headers[] = 'N'.$index;
+            $headers[] = 'x*_ij (C'.$index.')';
         }
         foreach (range(1, 6) as $index) {
-            $headers[] = 'V'.$index;
+            $headers[] = 'v_ij (C'.$index.')';
         }
-        $headers = array_merge($headers, ['Benefit', 'Cost', 'Yi', 'Nilai Sertifikat', 'Predikat', 'Status']);
+        $headers = array_merge($headers, ['Y_i^+', 'Y_i^-', 'Y_i', 'Nilai Sertifikat', 'Predikat', 'Status']);
 
         foreach ($headers as $index => $header) {
             $sheet->setCellValue(Coordinate::stringFromColumnIndex($index + 1).'6', $header);
